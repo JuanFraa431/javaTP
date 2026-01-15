@@ -1,0 +1,362 @@
+/* ===============================
+   Misterio en la Mansión — Admin > Usuarios (LISTADO)
+   Tema oscuro + glass + acentos dorado/naranja
+   =============================== */
+
+:root{
+  --bg1: #070a10;
+  --bg2: #0f1a2b;
+  --text: #e9eef8;
+  --muted: #a6b3c7;
+  --accent: #f7b733;
+  --accent2: #ff7a18;
+  --danger: #e85353;
+
+  --glass: rgba(14, 20, 32, 0.55);
+  --edge: rgba(255,255,255,.12);
+  --radius: 16px;
+  --shadow: 0 18px 45px rgba(0,0,0,.55);
+  --blur: 12px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:'Nunito', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color:var(--text);
+  background: radial-gradient(1200px 600px at 20% 10%, rgba(255,255,255,.03), transparent 60%),
+              linear-gradient(135deg, var(--bg1), var(--bg2) 60%);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+.page{
+  min-height:100vh;
+  padding: clamp(16px, 3vw, 36px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+}
+
+/* Header */
+.page h1{
+  font-family:'Overpass', sans-serif;
+  font-weight:800;
+  letter-spacing:.4px;
+  margin:8px 0 0 0;
+  text-align:center;
+  text-shadow:0 2px 4px rgba(0,0,0,.35);
+}
+.page .subtitle{
+  color:var(--muted);
+  font-weight:700;
+  margin:0 0 8px 0;
+}
+
+/* Barra de acciones */
+.actions{
+  width:min(1100px, 94vw);
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.actions .left,
+.actions .right{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.search{
+  display:flex; gap:8px; align-items:center;
+  background: var(--glass);
+  border:1px solid var(--edge);
+  border-radius: 12px;
+  padding:8px 10px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(var(--blur)) saturate(120%);
+}
+.search i{ opacity:.85 }
+.search input{
+  background:transparent; border:0; outline:none;
+  color:var(--text); min-width:220px;
+}
+.search input::placeholder{ color:#b9c6da; opacity:.75; }
+
+/* Botones */
+.btn{
+  display:inline-flex; align-items:center; gap:8px;
+  font-weight:900; letter-spacing:.3px;
+  border:0; border-radius:12px; cursor:pointer;
+  padding:10px 14px;
+  transition: transform .08s, box-shadow .18s, filter .18s;
+  box-shadow: 0 10px 22px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.25);
+  background: linear-gradient(180deg, color-mix(in oklab, var(--accent), white 10%), var(--accent2));
+  color:#0a0f18;
+}
+.btn:hover{ transform: translateY(-1px); filter:brightness(1.05); }
+.btn:active{ transform: translateY(0); }
+
+.btn-secondary{
+  background: linear-gradient(180deg, #7da0ff, #6b8cff);
+  color:#0a0f18;
+}
+.btn-ghost{
+  background: transparent;
+  color: var(--text);
+  border:1px dashed var(--edge);
+}
+.btn-danger{
+  background: linear-gradient(180deg, #ff7d7d, #ff5858);
+  color:#0a0f18;
+}
+.btn-success{
+  background: linear-gradient(180deg, #49d69e, #21b37d);
+  color: #07131d;
+  border: 1px solid rgba(120,255,180,.45);
+}
+.btn-success:hover{ filter: brightness(1.05); }
+
+/* Flash messages */
+.flash{
+  width:min(1100px, 94vw);
+  border-radius: 12px;
+  padding:12px 14px;
+  font-weight:800;
+  letter-spacing:.3px;
+  box-shadow: var(--shadow);
+  border:1px solid var(--edge);
+}
+.flash.ok{
+  background: rgba(247,183,51,.12);
+  color: color-mix(in oklab, var(--accent), white 10%);
+}
+.flash.error{
+  background: rgba(232,83,83,.12);
+  color: #ff9d9d;
+  border-color: rgba(232,83,83,.45);
+}
+
+/* Tabla */
+.table-wrap{
+  width:min(1100px, 94vw);
+  background: var(--glass);
+  border:1px solid var(--edge);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(var(--blur)) saturate(120%);
+  overflow:hidden;
+}
+
+table{
+  width:100%;
+  border-collapse: collapse;
+  font-size:.98rem;
+}
+thead th{
+  text-align:left;
+  background: rgba(255,255,255,.05);
+  padding:12px 14px;
+  font-weight:900;
+  letter-spacing:.3px;
+}
+tbody td{
+  border-top:1px solid rgba(255,255,255,.08);
+  padding:12px 14px;
+}
+tbody tr:hover{
+  background: rgba(255,255,255,.04);
+}
+
+/* Chips / estados */
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:4px 8px; border-radius:999px;
+  font-size:.82rem; font-weight:900;
+  border:1px solid rgba(255,255,255,.18);
+}
+.chip.admin{ background: rgba(247,183,51,.15); color: var(--accent); }
+.chip.jugador{ background: rgba(123,200,255,.12); color:#8ecaff; }
+.chip.inactivo{ background: rgba(232,83,83,.12); color:#ff9d9d; }
+.chip.activo{
+  background: rgba(120,255,180,.12);
+  color: #a3f7d3;
+  border-color: rgba(120,255,180,.35);
+}
+
+/* Acciones columna */
+.th-actions,
+.td-actions { text-align: right; }
+
+.row-actions{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+  width: 100%;
+}
+.row-actions .btn,
+.row-actions .btn-ghost,
+.row-actions .btn-danger,
+.row-actions .btn-success{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.form-inline{ display:inline; margin:0; }
+
+/* ===== FIX COMPACTO DE PAGINACIÓN ===== */
+.pager {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 20px auto 30px;
+  flex: 0 0 auto;
+}
+
+.pagination {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  flex: 0 0 auto;
+}
+
+.pagination .page {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #e9eef8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.8rem;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.pagination .page:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.pagination .page.is-active {
+  background: linear-gradient(180deg, #f7b733, #ff7a18);
+  color: #0b0f18;
+  border-color: rgba(255, 255, 255, 0.3);
+  font-weight: 800;
+}
+
+.pagination .page *,
+.pagination .page::before,
+.pagination .page::after {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+.pager *,
+.pagination * {
+  max-height: none !important;
+}
+
+/* --- Aislar el layout global para que no afecte la paginación --- */
+body > .page {
+  min-height: 100vh;       /* se aplica SOLO al contenedor raíz .page */
+}
+
+/* --- Neutralizar cualquier herencia en la paginación --- */
+.pager {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 0 0 auto;
+  margin: 16px auto 24px;
+}
+
+.pagination {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px;
+  padding: 4px 6px;
+  background: rgba(255,255,255,.03);
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0,0,0,.25);
+  height: auto !important;
+  min-height: 0 !important;
+  flex: 0 0 auto !important;
+}
+
+/* OJO: .page (botón) chocaba con tu .page de layout */
+.pagination > .page {
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 26px;
+  height: 26px !important;
+  min-height: 0 !important;
+  line-height: 26px !important;
+  padding: 0 8px !important;
+
+  border-radius: 6px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  color: #e9eef8;
+  font-weight: 700;
+  font-size: .8rem;
+  text-decoration: none;
+  transition: background .2s, transform .15s;
+}
+
+.pagination > .page:hover {
+  background: rgba(255,255,255,.1);
+  transform: translateY(-1px);
+}
+
+.pagination > .page.is-active {
+  background: linear-gradient(180deg, #f7b733, #ff7a18);
+  color: #0b0f18;
+  border-color: rgba(255,255,255,.3);
+}
+
+/* Por si algo pone height:100% dentro de los botones */
+.pagination > .page *,
+.pagination > .page::before,
+.pagination > .page::after {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+
+
+/* Responsivo */
+@media (max-width: 720px){
+  .actions{ flex-direction:column; align-items:stretch; }
+  .search{ width:100%; }
+  .search input{ width:100%; min-width:unset; }
+  thead{ display:none; }
+  tbody td{ display:block; padding:10px 14px; }
+  tbody tr{ border-bottom:1px solid rgba(255,255,255,.08); }
+  tbody td::before{
+    content: attr(data-label);
+    display:block; font-weight:800; color:var(--muted); margin-bottom:4px;
+  }
+  .row-actions{ margin-top:8px; }
+}

@@ -1,0 +1,151 @@
+/* ===============================
+   Misterio en la Mansión — Admin > Usuarios (FORMULARIO)
+   Tema oscuro + glass + acentos dorado/naranja
+   =============================== */
+
+:root{
+  --bg1: #070a10;
+  --bg2: #0f1a2b;
+  --text: #e9eef8;
+  --muted: #a6b3c7;
+  --accent: #f7b733;
+  --accent2: #ff7a18;
+  --danger: #e85353;
+
+  --glass: rgba(14, 20, 32, 0.55);
+  --edge: rgba(255,255,255,.12);
+  --radius: 16px;
+  --shadow: 0 18px 45px rgba(0,0,0,.55);
+  --blur: 12px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:'Nunito', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color:var(--text);
+  background: radial-gradient(1200px 600px at 20% 10%, rgba(255,255,255,.03), transparent 60%),
+              linear-gradient(135deg, var(--bg1), var(--bg2) 60%);
+}
+
+.page{
+  min-height:100vh;
+  padding: clamp(16px, 3vw, 36px);
+  display:flex; flex-direction:column; align-items:center; gap:14px;
+}
+
+.header{
+  text-align:center;
+}
+.header h1{
+  font-family:'Overpass', sans-serif;
+  font-weight:800; letter-spacing:.4px;
+  margin:8px 0 4px 0;
+  text-shadow:0 2px 4px rgba(0,0,0,.35);
+}
+.header .subtitle{
+  color:var(--muted); font-weight:700; margin:0;
+}
+
+/* Card formulario */
+.form-card{
+  width:min(720px, 94vw);
+  background: var(--glass);
+  border:1px solid var(--edge);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(var(--blur)) saturate(120%);
+  padding: 18px;
+}
+
+.form-row{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:14px;
+}
+.form-row.full{ grid-template-columns: 1fr; }
+
+.form-group{
+  display:flex; flex-direction:column; gap:6px;
+}
+.form-group label{
+  font-weight:800; letter-spacing:.3px;
+  color:var(--text);
+}
+.input, .select{
+  width:100%;
+  border-radius: 12px;
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(9,14,24,.58);
+  color:var(--text);
+  padding:12px 14px;
+  outline:none;
+  transition: border .2s, box-shadow .2s, background .2s, transform .05s;
+  box-shadow: inset 0 0 0 9999px rgba(255,255,255,.02);
+}
+.input::placeholder{ color:#b9c6da; opacity:.75; }
+.input:focus, .select:focus{
+  border-color: color-mix(in oklab, var(--accent), white 12%);
+  box-shadow: 0 0 0 3px rgba(247,183,51,.15), 0 8px 22px rgba(0,0,0,.35);
+  background: rgba(9,14,24,.75); transform: translateY(-1px);
+}
+
+.helper{
+  color:var(--muted); font-size:.9rem;
+}
+
+.check{
+  display:flex; align-items:center; gap:10px; margin-top:6px;
+}
+.check input{ width:18px; height:18px; }
+
+.form-actions{
+  display:flex; gap:10px; justify-content:flex-end; margin-top:16px;
+}
+.btn{
+  display:inline-flex; align-items:center; gap:8px;
+  font-weight:900; letter-spacing:.3px;
+  border:0; border-radius:12px; cursor:pointer;
+  padding:12px 16px;
+  transition: transform .08s, box-shadow .18s, filter .18s;
+  box-shadow: 0 10px 22px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.25);
+  background: linear-gradient(180deg, color-mix(in oklab, var(--accent), white 10%), var(--accent2));
+  color:#0a0f18;
+}
+.btn:hover{ transform: translateY(-1px); filter:brightness(1.05); }
+.btn:active{ transform: translateY(0); }
+
+.btn-ghost{
+  background: transparent; color: var(--text);
+  border:1px dashed var(--edge);
+}
+.btn-danger{
+  background: linear-gradient(180deg, #ff7d7d, #ff5858);
+  color:#0a0f18;
+}
+
+/* Flash */
+.flash{
+  width:min(720px, 94vw);
+  border-radius: 12px;
+  padding:12px 14px;
+  font-weight:800;
+  letter-spacing:.3px;
+  box-shadow: var(--shadow);
+  border:1px solid var(--edge);
+}
+.flash.ok{
+  background: rgba(247,183,51,.12);
+  color: color-mix(in oklab, var(--accent), white 10%);
+}
+.flash.error{
+  background: rgba(232,83,83,.12);
+  color: #ff9d9d;
+  border-color: rgba(232,83,83,.45);
+}
+
+/* Responsivo */
+@media (max-width: 680px){
+  .form-row{ grid-template-columns: 1fr; }
+}
