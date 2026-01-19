@@ -214,5 +214,21 @@ public class PartidaDAO {
             return ps.executeUpdate() > 0;
         }
     }
+    
+    /** Obtener todas las partidas de un usuario ordenadas por fecha (más recientes primero) */
+    public java.util.List<Partida> findAllByUsuario(int usuarioId) throws SQLException {
+        String sql = "SELECT * FROM partida WHERE usuario_id=? ORDER BY fecha_inicio DESC";
+        java.util.List<Partida> partidas = new java.util.ArrayList<>();
+        try (Connection con = DbConn.getInstancia().getConn();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, usuarioId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    partidas.add(map(rs));
+                }
+            }
+        }
+        return partidas;
+    }
 
 }

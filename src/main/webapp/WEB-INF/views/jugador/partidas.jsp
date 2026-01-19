@@ -40,6 +40,11 @@
     <header class="header">
       <h1 class="title">ELEGÍ UNA HISTORIA</h1>
       <p class="subtitle">Comenzá un caso nuevo. Más historias se desbloquearán pronto…</p>
+      <div style="text-align: center; margin-top: 16px;">
+        <a href="<%=ctx%>/jugador/home" class="btn btn-secondary" style="display: inline-block; text-decoration: none;">
+          <i class="fa-solid fa-arrow-left"></i> Volver
+        </a>
+      </div>
     </header>
 
     <% if (flashError != null) { %>

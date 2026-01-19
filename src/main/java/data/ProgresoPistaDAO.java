@@ -45,4 +45,19 @@ public class ProgresoPistaDAO {
         }
         return null;
     }
+    
+    /** Cuenta cuántas pistas tiene una partida específica */
+    public int contarPistasPorPartida(int partidaId) throws SQLException {
+        String sql = "SELECT COUNT(*) as total FROM progreso_pista WHERE partida_id=?";
+        try (Connection con = DbConn.getInstancia().getConn();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, partidaId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("total");
+                }
+            }
+        }
+        return 0;
+    }
 }

@@ -2,8 +2,11 @@ package logic.jugador;
 
 import data.HistoriaDAO;
 import data.PartidaDAO;
+import data.ProgresoUbicacionDAO;
+import data.UbicacionDAO;
 import data.UsuarioDAO;
 import entities.Partida;
+import entities.Ubicacion;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -17,6 +20,8 @@ public class IniciarPartidaServlet extends HttpServlet {
     private final PartidaDAO partidaDAO = new PartidaDAO();
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
     private final HistoriaDAO historiaDAO = new HistoriaDAO();
+    private final UbicacionDAO ubicacionDAO = new UbicacionDAO();
+    private final ProgresoUbicacionDAO progresoUbicacionDAO = new ProgresoUbicacionDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -70,6 +75,17 @@ public class IniciarPartidaServlet extends HttpServlet {
                 s.setAttribute("flash_error", "No se pudo crear la partida.");
                 resp.sendRedirect(req.getContextPath() + "/jugador/partidas/nueva");
                 return;
+            }
+
+            // Registrar la ubicación inicial (primera ubicación accesible de la historia)
+            try {
+                Ubicacion ubicacionInicial = ubicacionDAO.findPrimeraUbicacion(historiaId);
+                if (ubicacionInicial != null) {
+                    progresoUbicacionDAO.registrarUbicacion(partidaId, ubicacionInicial.getId());
+                }
+            } catch (SQLException e) {
+                // Log pero no detener el flujo
+                System.err.println("No se pudo registrar ubicación inicial: " + e.getMessage());
             }
 
             // Marcar usuario en partida
