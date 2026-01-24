@@ -1,5 +1,6 @@
 package logic.jugador;
 
+import data.ClasificacionDAO;
 import data.HistoriaDAO;
 import data.PartidaDAO;
 import data.UsuarioDAO;
@@ -19,6 +20,7 @@ public class NuevaPartidaServlet extends HttpServlet {
     private final HistoriaDAO historiaDAO = new HistoriaDAO();
     private final PartidaDAO partidaDAO = new PartidaDAO();
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
+    private final ClasificacionDAO clasificacionDAO = new ClasificacionDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -39,9 +41,22 @@ public class NuevaPartidaServlet extends HttpServlet {
                 req.setAttribute("partidaActivaId", activa.get().getId());
             }
 
+            // Calcular la liga del usuario
+            String ligaUsuario = clasificacionDAO.calcularLiga(userId);
+            int puntosUsuario = clasificacionDAO.calcularPuntosTotales(userId);
+            
             // Obtener todas las historias activas
             List<Historia> historias = historiaDAO.getAll(true); // solo activas
+            
+            // Marcar cuáles son accesibles según la liga del usuario
+            for (Historia h : historias) {
+                boolean accesible = esHistoriaAccesible(ligaUsuario, h.getLigaMinima());
+                h.setAccesible(accesible);
+            }
+            
             req.setAttribute("historias", historias);
+            req.setAttribute("ligaUsuario", ligaUsuario);
+            req.setAttribute("puntosUsuario", puntosUsuario);
 
             // Mensajes flash
             String flashError = (String) s.getAttribute("flash_error");
@@ -59,5 +74,26 @@ public class NuevaPartidaServlet extends HttpServlet {
         } catch (SQLException e) {
             throw new ServletException(e);
         }
+    }
+    
+    /**
+     * Determina si una historia es accesible según las ligas
+     */
+    private boolean esHistoriaAccesible(String ligaUsuario, String ligaRequerida) {
+        if (ligaRequerida == null) return true; // Sin requisito
+        
+        // Orden de ligas
+        String[] orden = {"bronce", "plata", "oro", "platino", "diamante"};
+        int nivelUsuario = indexOf(orden, ligaUsuario);
+        int nivelRequerido = indexOf(orden, ligaRequerida);
+        
+        return nivelUsuario >= nivelRequerido;
+    }
+    
+    private int indexOf(String[] array, String valor) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i].equals(valor)) return i;
+        }
+        return 0; // Por defecto bronce
     }
 }

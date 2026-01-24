@@ -2,6 +2,7 @@ package logic.jugador;
 
 import data.PartidaDAO;
 import data.ProgresoPistaDAO;
+import logic.LogroService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -21,6 +22,7 @@ public class GuardarPistaServlet extends HttpServlet {
 
     private final PartidaDAO pdao = new PartidaDAO();
     private final ProgresoPistaDAO progresoPistaDAO = new ProgresoPistaDAO();
+    private final LogroService logroService = new LogroService();
     private static final String CODE_OK = "7391";
 
     @Override
@@ -96,6 +98,17 @@ public class GuardarPistaServlet extends HttpServlet {
                     System.out.println("[GuardarPistaServlet] Marcando como ganada...");
                     // Marcar como ganada (esto NO debe resetear pistas_encontradas)
                     pdao.marcarGanada(partidaId, 100);
+                    
+                    // Verificar y otorgar logros automáticamente
+                    try {
+                        Integer userId = (Integer) req.getSession(false).getAttribute("userId");
+                        if (userId != null) {
+                            logroService.verificarLogrosPartidaFinalizada(userId, partidaId);
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error al verificar logros: " + e.getMessage());
+                        e.printStackTrace();
+                    }
                     
                     win = true;
                     System.out.println("[GuardarPistaServlet] ✓ Proceso completado, win=true");

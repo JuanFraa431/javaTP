@@ -3,6 +3,7 @@ package logic.jugador;
 import data.PartidaDAO;
 import data.UsuarioDAO;
 import entities.Partida;
+import logic.LogroService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -14,6 +15,7 @@ import java.sql.SQLException;
 public class FinalizarPartidaServlet extends HttpServlet {
     private final PartidaDAO partidaDAO = new PartidaDAO();
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
+    private final LogroService logroService = new LogroService();
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -55,6 +57,15 @@ public class FinalizarPartidaServlet extends HttpServlet {
 
             // Finalizar la partida (se convertirá a GANADA internamente)
             partidaDAO.finalizar(pid, "GANADA");
+            
+            // Verificar y otorgar logros automáticamente
+            try {
+                logroService.verificarLogrosPartidaFinalizada(userId, pid);
+            } catch (Exception e) {
+                // Si falla la verificación de logros, no afectar el flujo principal
+                System.err.println("Error al verificar logros: " + e.getMessage());
+                e.printStackTrace();
+            }
             
             // Liberar al usuario
             usuarioDAO.setEnPartida(userId, false);

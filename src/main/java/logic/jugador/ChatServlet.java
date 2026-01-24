@@ -4,6 +4,7 @@ import data.DocumentoDAO;
 import data.PartidaDAO;
 import data.ProgresoPistaDAO;
 import entities.Documento;
+import logic.LogroService;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -18,6 +19,7 @@ public class ChatServlet extends HttpServlet {
     private final ProgresoPistaDAO progDAO = new ProgresoPistaDAO();
     private final DocumentoDAO documentoDAO = new DocumentoDAO();
     private final PartidaDAO partidaDAO = new PartidaDAO();
+    private final LogroService logroService = new LogroService();
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -54,6 +56,17 @@ public class ChatServlet extends HttpServlet {
                         
                         // 3. Marcar como ganada con puntuación de 100
                         partidaDAO.marcarGanada(partidaId, 100);
+                        
+                        // 4. Verificar y otorgar logros automáticamente
+                        try {
+                            Integer userId = (Integer) s.getAttribute("userId");
+                            if (userId != null) {
+                                logroService.verificarLogrosPartidaFinalizada(userId, partidaId);
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Error al verificar logros: " + e.getMessage());
+                            e.printStackTrace();
+                        }
                         
                         out.printf("{\"ok\":true,\"message\":\"¡Excelente! Registré la pista '%s'.\",\"persisted\":%s}",
                                 doc.getPistaNombre(), persisted ? "true" : "false");

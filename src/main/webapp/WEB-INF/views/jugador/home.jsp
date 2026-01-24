@@ -5,6 +5,16 @@
   if (tieneActiva == null) tieneActiva = Boolean.FALSE;
   String nombre = (String) session.getAttribute("nombre");
   if (nombre == null || nombre.isBlank()) nombre = "Detective";
+  
+  // Estadísticas del usuario
+  Integer puntosTotales = (Integer) request.getAttribute("puntosTotales");
+  String ligaActual = (String) request.getAttribute("ligaActual");
+  String proximaLiga = (String) request.getAttribute("proximaLiga");
+  Integer puntosProximaLiga = (Integer) request.getAttribute("puntosProximaLiga");
+  Integer puntosFaltantes = (Integer) request.getAttribute("puntosFaltantes");
+  Integer porcentajeProgreso = (Integer) request.getAttribute("porcentajeProgreso");
+  Integer logrosDesbloqueados = (Integer) request.getAttribute("logrosDesbloqueados");
+  Integer totalLogros = (Integer) request.getAttribute("totalLogros");
 %> 
 <!DOCTYPE html>
 <html lang="es">
@@ -17,6 +27,113 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <!-- Estilos de esta pantalla -->
   <link rel="stylesheet" href="${pageContext.request.contextPath}/style/home.css">
+  <style>
+    .liga-widget {
+      background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(240,240,255,0.95));
+      border-radius: 16px;
+      padding: 20px;
+      margin: 24px auto;
+      max-width: 600px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      backdrop-filter: blur(10px);
+    }
+    .liga-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .liga-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-weight: 800;
+      font-size: 1.3em;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .liga-bronce { background: linear-gradient(135deg, #cd7f32, #8b4513); color: white; }
+    .liga-plata { background: linear-gradient(135deg, #c0c0c0, #a8a8a8); color: #222; }
+    .liga-oro { background: linear-gradient(135deg, #ffd700, #ffed4e); color: #333; }
+    .liga-platino { background: linear-gradient(135deg, #e5e4e2, #b9b9b9); color: #333; }
+    .liga-diamante { background: linear-gradient(135deg, #b9f2ff, #00bfff); color: #003366; }
+    .liga-stats {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .liga-stats .stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #555;
+      font-size: 0.95em;
+    }
+    .liga-stats .stat i {
+      color: #f39c12;
+      font-size: 1.1em;
+    }
+    .liga-progreso {
+      margin-top: 16px;
+    }
+    .progreso-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.9em;
+      color: #666;
+    }
+    .puntos-faltantes {
+      color: #f39c12;
+      font-weight: 600;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: rgba(200,200,200,0.4);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4caf50, #8bc34a);
+      border-radius: 8px;
+      transition: width 0.5s ease;
+      box-shadow: 0 0 8px rgba(76,175,80,0.5);
+    }
+    .liga-maxima {
+      margin-top: 16px;
+      text-align: center;
+      padding: 12px;
+      background: linear-gradient(135deg, #fff9e6, #ffe4b3);
+      border-radius: 8px;
+      color: #856404;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .liga-maxima i {
+      color: #ffc107;
+      font-size: 1.3em;
+    }
+    @media (max-width: 600px) {
+      .liga-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .liga-badge {
+        font-size: 1.1em;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -43,6 +160,45 @@
       <h1 class="game-title">Misterio en la Mansión</h1>
       <p class="tagline">Bienvenido, <strong><%= nombre %></strong>… tu intuición será puesta a prueba.</p>
     </header>
+
+    <!-- Widget de Liga -->
+    <% if (ligaActual != null && puntosTotales != null) { %>
+    <div class="liga-widget">
+      <div class="liga-header">
+        <div class="liga-badge liga-<%= ligaActual %>">
+          <i class="fa-solid fa-trophy"></i>
+          <span><%= ligaActual.substring(0,1).toUpperCase() + ligaActual.substring(1) %></span>
+        </div>
+        <div class="liga-stats">
+          <div class="stat">
+            <i class="fa-solid fa-star"></i>
+            <span><strong><%= puntosTotales %></strong> puntos</span>
+          </div>
+          <div class="stat">
+            <i class="fa-solid fa-medal"></i>
+            <span><strong><%= logrosDesbloqueados %>/<%= totalLogros %></strong> logros</span>
+          </div>
+        </div>
+      </div>
+      
+      <% if (!"diamante".equals(ligaActual)) { %>
+      <div class="liga-progreso">
+        <div class="progreso-info">
+          <span>Próxima liga: <strong><%= proximaLiga.substring(0,1).toUpperCase() + proximaLiga.substring(1) %></strong></span>
+          <span class="puntos-faltantes"><%= puntosFaltantes %> puntos restantes</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: <%= porcentajeProgreso %>%"></div>
+        </div>
+      </div>
+      <% } else { %>
+      <div class="liga-maxima">
+        <i class="fa-solid fa-crown"></i>
+        <span>¡Has alcanzado la liga máxima!</span>
+      </div>
+      <% } %>
+    </div>
+    <% } %>
 
     <!-- Acciones rápidas -->
     <div class="quick">

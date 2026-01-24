@@ -1,7 +1,6 @@
 package data;
 
 import entities.Historia;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +55,7 @@ public class HistoriaDAO {
         if (hasColumn(rs, "dificultad"))       h.setDificultad(rs.getInt("dificultad"));
         if (hasColumn(rs, "tiempo_estimado"))  h.setTiempoEstimado(rs.getInt("tiempo_estimado"));
         if (hasColumn(rs, "fecha_creacion"))   h.setFechaCreacion(rs.getTimestamp("fecha_creacion"));
+        if (hasColumn(rs, "liga_minima"))      h.setLigaMinima(rs.getString("liga_minima"));
 
         return h;
     }

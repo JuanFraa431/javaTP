@@ -230,5 +230,38 @@ public class PartidaDAO {
         }
         return partidas;
     }
+    
+    /** Obtener partidas de un usuario filtradas por estado */
+    public java.util.List<Partida> findByUsuarioAndEstado(int usuarioId, String estado) throws SQLException {
+        String sql = "SELECT * FROM partida WHERE usuario_id=? AND estado=? ORDER BY fecha_inicio DESC";
+        java.util.List<Partida> partidas = new java.util.ArrayList<>();
+        try (Connection con = DbConn.getInstancia().getConn();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, usuarioId);
+            ps.setString(2, estado);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    partidas.add(map(rs));
+                }
+            }
+        }
+        return partidas;
+    }
+    
+    /** Obtener partidas de un usuario ordenadas por fecha de inicio (para verificar días consecutivos) */
+    public java.util.List<Partida> findByUsuarioOrderByFecha(int usuarioId) throws SQLException {
+        String sql = "SELECT * FROM partida WHERE usuario_id=? ORDER BY fecha_inicio ASC";
+        java.util.List<Partida> partidas = new java.util.ArrayList<>();
+        try (Connection con = DbConn.getInstancia().getConn();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, usuarioId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    partidas.add(map(rs));
+                }
+            }
+        }
+        return partidas;
+    }
 
 }

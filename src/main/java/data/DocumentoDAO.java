@@ -191,4 +191,50 @@ public class DocumentoDAO {
             return ps.executeUpdate() > 0;
         }
     }
+    
+    /**
+     * Cuenta el total de documentos en una historia
+     */
+    public int contarDocumentosPorHistoria(int historiaId) throws SQLException {
+        String sql = "SELECT COUNT(*) as total FROM documento WHERE historia_id = ?";
+        
+        try (Connection con = DbConn.getInstancia().getConn();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setInt(1, historiaId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("total");
+                }
+            }
+        }
+        return 0;
+    }
+    
+    /**
+     * Cuenta los documentos descubiertos en una partida
+     * (Asumiendo que existe una tabla documento_descubierto o similar)
+     * Si no existe, este método puede necesitar ajustes según tu esquema
+     */
+    public int contarDocumentosDescubiertos(int partidaId) throws SQLException {
+        // Este método necesita una tabla que registre qué documentos ha descubierto el usuario
+        // Por ahora retornamos 0 como placeholder
+        // TODO: Implementar según el esquema real de tu base de datos
+        String sql = "SELECT COUNT(*) as total FROM documento_descubierto WHERE partida_id = ?";
+        
+        try (Connection con = DbConn.getInstancia().getConn();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setInt(1, partidaId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("total");
+                }
+            }
+        } catch (SQLException e) {
+            // Si la tabla no existe, retornar 0
+            return 0;
+        }
+        return 0;
+    }
 }
