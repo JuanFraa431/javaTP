@@ -251,6 +251,14 @@
       align-items:center;
       gap:10px;
     }
+    .jugador-avatar{
+      width:40px;
+      height:40px;
+      border-radius:50%;
+      object-fit:cover;
+      border:2px solid rgba(255,255,255,.2);
+      box-shadow:0 2px 8px rgba(0,0,0,.3);
+    }
     .liga-icon{
       font-size:1.2em;
     }
@@ -380,6 +388,7 @@
           <thead>
             <tr>
               <th>POS</th>
+              <th></th>
               <th>JUGADOR</th>
               <th class="hide-mobile">LIGA</th>
               <th>PUNTOS</th>
@@ -398,6 +407,7 @@
                 int logros = (Integer) jugador.get("logros");
                 String liga = (String) jugador.get("liga");
                 int jugadorId = (Integer) jugador.get("id");
+                String avatarUrl = ctx + "/avatar?userId=" + jugadorId;
                 boolean esUsuarioActual = currentUserId != null && currentUserId == jugadorId;
                 
                 String posClass = "";
@@ -415,6 +425,9 @@
                   <% } else { %>
                     <%=pos%>
                   <% } %>
+                </td>
+                <td>
+                  <img src="<%=avatarUrl%>" alt="Avatar" class="jugador-avatar">
                 </td>
                 <td class="jugador-nombre">
                   <%=nombreJugador%>

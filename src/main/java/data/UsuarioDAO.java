@@ -1,7 +1,6 @@
 package data;
 
 import entities.Usuario;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.sql.*;
@@ -46,13 +45,15 @@ public class UsuarioDAO {
         u.setRol(rs.getString("rol"));
         // NUEVO: mapear estado
         try { u.setActivo(rs.getBoolean("activo")); } catch (SQLException ignore) {}
+        // NUEVO: mapear avatar
+        try { u.setAvatar(rs.getString("avatar")); } catch (SQLException ignore) {}
         return u;
     }
 
     /* ===================== Consultas ===================== */
 
     public List<Usuario> getAll(boolean soloActivos) throws SQLException {
-        String sql = "SELECT id, nombre, email, rol, activo FROM usuario"
+        String sql = "SELECT id, nombre, email, rol, activo, avatar FROM usuario"
                    + (soloActivos ? " WHERE activo=1" : "")
                    + " ORDER BY id";
         List<Usuario> out = new ArrayList<>();
@@ -68,7 +69,7 @@ public class UsuarioDAO {
     public List<Usuario> search(String q, boolean includeInactivos) throws SQLException {
         if (q == null) q = "";
         String like = "%" + q.trim() + "%";
-        String sql = "SELECT id, nombre, email, rol, activo FROM usuario " +
+        String sql = "SELECT id, nombre, email, rol, activo, avatar FROM usuario " +
                      "WHERE (nombre LIKE ? OR email LIKE ?) " +
                      (includeInactivos ? "" : "AND activo=1 ") +
                      "ORDER BY id";
@@ -85,7 +86,7 @@ public class UsuarioDAO {
     }
 
     public Usuario findById(int id) throws SQLException {
-        String sql = "SELECT id, nombre, email, rol, activo FROM usuario WHERE id=?";
+        String sql = "SELECT id, nombre, email, rol, activo, avatar FROM usuario WHERE id=?";
         try (Connection con = DbConn.getInstancia().getConn();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -97,7 +98,7 @@ public class UsuarioDAO {
     }
 
     public Usuario findByEmail(String email) throws SQLException {
-        String sql = "SELECT id, nombre, email, rol, activo FROM usuario WHERE email=?";
+        String sql = "SELECT id, nombre, email, rol, activo, avatar FROM usuario WHERE email=?";
         try (Connection con = DbConn.getInstancia().getConn();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, email);
@@ -233,4 +234,15 @@ public class UsuarioDAO {
           }
         }
       }
+      
+    /** Actualiza solo el avatar de un usuario. */
+    public boolean updateAvatar(int id, String avatarPath) throws SQLException {
+        String sql = "UPDATE usuario SET avatar=? WHERE id=?";
+        try (Connection con = DbConn.getInstancia().getConn();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, avatarPath);
+            ps.setInt(2, id);
+            return ps.executeUpdate() > 0;
+        }
+    }
 }

@@ -229,6 +229,9 @@
     const PISTA_NOMBRE = '<%= pistaNombre %>';
     let awaitingCode = false;
 
+    // Información de la historia
+    const contextoHistoria = `<%= historia != null && historia.getContexto() != null ? historia.getContexto().replace("`", "\\`").replace("\"", "&quot;") : "Revisá los documentos para encontrar pistas sobre este misterio." %>`;
+
     function inicio() {
         setReplies([]);
         bot(`Bienvenido, <strong><%=nombre%></strong>. Soy tu compañero virtual.`);
@@ -239,7 +242,7 @@
                 label: 'Repasá el caso',
                 onClick: () => {
                     me('Repasá el caso');
-                    bot('Víctima en el estudio. Varios posibles motivos. Revisá los documentos para pistas.');
+                    bot(contextoHistoria);
                 }
             },
             {

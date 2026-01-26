@@ -1,10 +1,13 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="entities.Usuario" %>
 <%
   String ctx = request.getContextPath();
   Boolean tieneActiva = (Boolean) request.getAttribute("tieneActiva");
   if (tieneActiva == null) tieneActiva = Boolean.FALSE;
   String nombre = (String) session.getAttribute("nombre");
   if (nombre == null || nombre.isBlank()) nombre = "Detective";
+  Integer userId = (Integer) session.getAttribute("userId");
+  String avatarUrl = ctx + "/avatar?userId=" + (userId != null ? userId : 0);
   
   // Estadísticas del usuario
   Integer puntosTotales = (Integer) request.getAttribute("puntosTotales");
@@ -44,6 +47,20 @@
       margin-bottom: 16px;
       flex-wrap: wrap;
       gap: 12px;
+    }
+    .liga-user-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+    }
+    .liga-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid rgba(255,255,255,.9);
+      box-shadow: 0 4px 12px rgba(0,0,0,.2);
     }
     .liga-badge {
       display: inline-flex;
@@ -165,9 +182,12 @@
     <% if (ligaActual != null && puntosTotales != null) { %>
     <div class="liga-widget">
       <div class="liga-header">
-        <div class="liga-badge liga-<%= ligaActual %>">
-          <i class="fa-solid fa-trophy"></i>
-          <span><%= ligaActual.substring(0,1).toUpperCase() + ligaActual.substring(1) %></span>
+        <div class="liga-user-info">
+          <img src="<%= avatarUrl %>" alt="Avatar" class="liga-avatar">
+          <div class="liga-badge liga-<%= ligaActual %>">
+            <i class="fa-solid fa-trophy"></i>
+            <span><%= ligaActual.substring(0,1).toUpperCase() + ligaActual.substring(1) %></span>
+          </div>
         </div>
         <div class="liga-stats">
           <div class="stat">
@@ -200,10 +220,30 @@
     </div>
     <% } %>
 
+    <!-- Información de puntos -->
+    <div style="max-width: 600px; margin: 20px auto; padding: 16px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 12px; text-align: center;">
+      <h4 style="margin: 0 0 12px; color: #667eea; font-size: 1.1em;">
+        <i class="fa-solid fa-info-circle"></i> ¿Cómo ganar puntos?
+      </h4>
+      <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; font-size: 0.9em; color: rgba(255,255,255,0.85);">
+        <div>
+          <i class="fa-solid fa-star" style="color: #f39c12;"></i>
+          <strong>Partidas Ganadas:</strong> Tu puntuación final suma
+        </div>
+        <div>
+          <i class="fa-solid fa-medal" style="color: #e67e22;"></i>
+          <strong>Logros:</strong> Cada logro suma puntos fijos
+        </div>
+      </div>
+      <p style="margin: 10px 0 0; font-size: 0.85em; color: rgba(255,255,255,0.6);">
+        Mejora tu rendimiento para ganar más puntos por partida
+      </p>
+    </div>
+
     <!-- Acciones rápidas -->
     <div class="quick">
-      <!-- Continuar: si no hay partida activa, el JuegoServlet te redirige a nueva -->
-      <a class="btn btn-primary" href="${pageContext.request.contextPath}/jugador/partidas/juego">
+      <!-- Continuar: va a Mis Partidas para que elija cual continuar -->
+      <a class="btn btn-primary" href="${pageContext.request.contextPath}/jugador/partidas">
         <i class="fa-solid fa-play"></i> Continuar partida
       </a>
       <!-- Nueva partida: va a la selección de historia -->

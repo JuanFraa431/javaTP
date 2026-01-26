@@ -9,6 +9,7 @@ public class Usuario {
     private byte[] passwordHash;
     private String rol;   // "INVITADO" | "JUGADOR" | "ADMIN"
     private boolean activo; // <-- NUEVO campo para el estado del usuario
+    private String avatar; // Ruta del archivo de avatar (ej: "avatars/123.jpg")
 
     // --- Getters y Setters ---
     public int getId() { return id; }
@@ -35,4 +36,8 @@ public class Usuario {
     // --- NUEVO: campo activo ---
     public boolean isActivo() { return activo; }
     public void setActivo(boolean activo) { this.activo = activo; }
+    
+    // --- NUEVO: campo avatar ---
+    public String getAvatar() { return avatar; }
+    public void setAvatar(String avatar) { this.avatar = avatar; }
 }

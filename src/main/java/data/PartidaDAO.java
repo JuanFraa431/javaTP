@@ -263,5 +263,15 @@ public class PartidaDAO {
         }
         return partidas;
     }
+    
+    /** Abandonar una partida en progreso */
+    public boolean abandonarPartida(int partidaId) throws SQLException {
+        String sql = "UPDATE partida SET estado='ABANDONADA', fecha_fin=NOW() WHERE id=? AND estado='EN_PROGRESO'";
+        try (Connection con = DbConn.getInstancia().getConn();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, partidaId);
+            return ps.executeUpdate() > 0;
+        }
+    }
 
 }

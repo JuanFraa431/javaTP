@@ -9,6 +9,11 @@
   Map<Integer, Integer> pistasRealesMap = (Map<Integer, Integer>) request.getAttribute("pistasRealesMap");
   Map<Integer, Integer> ubicacionesRealesMap = (Map<Integer, Integer>) request.getAttribute("ubicacionesRealesMap");
   SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+  
+  String success = (String) session.getAttribute("success");
+  String error = (String) session.getAttribute("error");
+  if (success != null) session.removeAttribute("success");
+  if (error != null) session.removeAttribute("error");
 %>
 <!DOCTYPE html>
 <html lang="es">
@@ -19,6 +24,22 @@
   <link rel="stylesheet" href="<%=ctx%>/style/partidas.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+    }
+    .alert-success {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+    .alert-error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
     .stats {
       display: flex;
       gap: 16px;
@@ -82,6 +103,17 @@
         </a>
       </div>
     </header>
+
+    <% if (success != null) { %>
+      <div class="alert alert-success">
+        <i class="fa-solid fa-check-circle"></i> <%= success %>
+      </div>
+    <% } %>
+    <% if (error != null) { %>
+      <div class="alert alert-error">
+        <i class="fa-solid fa-exclamation-circle"></i> <%= error %>
+      </div>
+    <% } %>
 
     <% if (partidas == null || partidas.isEmpty()) { %>
       <div class="empty-state">
@@ -157,11 +189,18 @@
               <% } %>
             </div>
             
-            <div style="margin-top: 16px;">
+            <div style="margin-top: 16px; display: flex; gap: 8px;">
               <% if ("EN_PROGRESO".equals(p.getEstado())) { %>
                 <a href="<%=ctx%>/jugador/partidas/juego?pid=<%= p.getId() %>" class="btn btn-primary" style="text-decoration: none;">
                   <i class="fa-solid fa-play"></i> Continuar
                 </a>
+                <form method="post" action="<%=ctx%>/jugador/abandonar-partida" style="display: inline;" 
+                      onsubmit="return confirm('¿Estás seguro de que querés abandonar esta partida? Esta acción no se puede deshacer.');">
+                  <input type="hidden" name="partidaId" value="<%= p.getId() %>">
+                  <button type="submit" class="btn btn-danger">
+                    <i class="fa-solid fa-flag"></i> Abandonar
+                  </button>
+                </form>
               <% } else { %>
                 <button class="btn btn-ghost" disabled>
                   <i class="fa-solid fa-check"></i> Finalizada
