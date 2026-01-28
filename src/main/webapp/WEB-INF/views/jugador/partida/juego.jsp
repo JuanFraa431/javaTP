@@ -16,10 +16,20 @@
     // Obtener el documento con código correcto
     String codigoCorrecto = "";
     String pistaNombre = "";
+    String tipoCodigoHint = "";
     for (entities.Documento doc : documentos) {
         if (doc.getCodigoCorrecto() != null && !doc.getCodigoCorrecto().isEmpty()) {
             codigoCorrecto = doc.getCodigoCorrecto();
             pistaNombre = doc.getPistaNombre() != null ? doc.getPistaNombre() : "Pista principal";
+            
+            // Detectar si es numérico o texto
+            if (codigoCorrecto.matches("\\d+")) {
+                tipoCodigoHint = "código numérico de " + codigoCorrecto.length() + " dígitos";
+            } else if (codigoCorrecto.matches("[A-Za-z]+")) {
+                tipoCodigoHint = "palabra de " + codigoCorrecto.length() + " letras en MAYÚSCULAS";
+            } else {
+                tipoCodigoHint = "código de " + codigoCorrecto.length() + " caracteres";
+            }
             break;
         }
     }
@@ -86,7 +96,7 @@
 
     <!-- Entrada de código -->
     <form id="codeForm" class="code-form" hidden>
-        <input type="text" id="codeInput" placeholder="Ingresá el código…" autocomplete="off" />
+        <input type="text" id="codeInput" placeholder="Ingresá el código…" autocomplete="off" aria-label="Código de resolución" />
         <button type="submit" class="btn btn-primary">
             <i class="fa-solid fa-paper-plane"></i> Enviar
         </button>
@@ -227,6 +237,7 @@
     /* ================== Flujo del chat ================== */
     const CODE_OK = '<%= codigoCorrecto %>';
     const PISTA_NOMBRE = '<%= pistaNombre %>';
+    const TIPO_CODIGO_HINT = '<%= tipoCodigoHint %>';
     let awaitingCode = false;
 
     // Información de la historia
@@ -271,6 +282,21 @@
     function descubriCodigo() {
         me('Encontré el código secreto');
         bot('Excelente. ¿Cuál es el código? Ingresalo abajo.');
+        
+        // Mostrar pista del tipo de código
+        if (TIPO_CODIGO_HINT) {
+            bot(`<small style="color:#888;"><em>💡 Pista: Estoy buscando un ${TIPO_CODIGO_HINT}</em></small>`);
+        }
+        
+        // Actualizar placeholder dinámicamente
+        if (TIPO_CODIGO_HINT.includes('numérico')) {
+            codeInput.placeholder = 'Ej: 1234 (solo números)';
+        } else if (TIPO_CODIGO_HINT.includes('palabra')) {
+            codeInput.placeholder = 'Ej: NOMBRE (en MAYÚSCULAS)';
+        } else {
+            codeInput.placeholder = 'Ingresá el código…';
+        }
+        
         awaitingCode = true;
         setReplies([]);
         codeForm.hidden = false;

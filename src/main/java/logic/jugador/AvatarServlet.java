@@ -40,8 +40,12 @@ public class AvatarServlet extends HttpServlet {
             }
             
             // La ruta del avatar en BD es "avatars/user_X.ext"
-            // Buscar en la carpeta real deployada
-            String uploadPath = getServletContext().getRealPath("") + File.separator + "avatars";
+            // SOLUCIÓN PERMANENTE: Usar la misma ruta fija que UploadAvatarServlet
+            String uploadPath = System.getProperty("avatar.upload.dir");
+            if (uploadPath == null || uploadPath.isEmpty()) {
+                uploadPath = "C:/Users/sere-/Desktop/java/javaTP/src/main/webapp/avatars";
+            }
+            
             File avatarFile = new File(uploadPath, usuario.getAvatar().replace("avatars/", ""));
             
             System.out.println("DEBUG: Buscando avatar en: " + avatarFile.getAbsolutePath());

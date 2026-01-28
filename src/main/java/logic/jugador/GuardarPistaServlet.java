@@ -1,7 +1,9 @@
 package logic.jugador;
 
+import data.DocumentoDAO;
 import data.PartidaDAO;
 import data.ProgresoPistaDAO;
+import entities.Documento;
 import logic.LogroService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -15,15 +17,16 @@ import java.util.regex.Pattern;
 
 /**
  * POST /jugador/partida/pista
- * JSON esperado: { "key": "codigo_pc", "valor": "7391" }
+ * JSON esperado: { "key": "codigo_pc", "valor": "CODIGO_CORRECTO" }
+ * Ahora soporta múltiples códigos según la historia
  */
 @WebServlet("/jugador/partida/pista")
 public class GuardarPistaServlet extends HttpServlet {
 
     private final PartidaDAO pdao = new PartidaDAO();
     private final ProgresoPistaDAO progresoPistaDAO = new ProgresoPistaDAO();
+    private final DocumentoDAO documentoDAO = new DocumentoDAO();
     private final LogroService logroService = new LogroService();
-    private static final String CODE_OK = "7391";
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
@@ -72,34 +75,53 @@ public class GuardarPistaServlet extends HttpServlet {
             System.out.println("[GuardarPistaServlet] Comparando key: '" + key + "' con 'codigo_pc'");
             if ("codigo_pc".equalsIgnoreCase(key)) {
                 System.out.println("[GuardarPistaServlet] ✓ Key coincide con 'codigo_pc'");
-                System.out.println("[GuardarPistaServlet] Comparando valor: '" + valor + "' (sin espacios: '" + (valor != null ? valor.replaceAll("\\s+", "") : "null") + "') con '" + CODE_OK + "'");
-                if (valor != null && valor.replaceAll("\\s+", "").equals(CODE_OK)) {
+                
+                // Obtener el código correcto desde la BD según la historia
+                Documento docCodigo = documentoDAO.findDocumentoConCodigo(historiaId);
+                
+                if (docCodigo == null || docCodigo.getCodigoCorrecto() == null) {
+                    System.out.println("[ERROR] No se encontró código correcto para historia_id=" + historiaId);
+                    resp.setStatus(500);
+                    resp.getWriter().write("{\"ok\":false, \"error\":\"Historia sin código configurado\"}");
+                    return;
+                }
+                
+                String codigoCorrecto = docCodigo.getCodigoCorrecto().trim().toUpperCase();
+                String valorIngresado = (valor != null ? valor.trim().toUpperCase() : "");
+                
+                System.out.println("[GuardarPistaServlet] Código correcto esperado: '" + codigoCorrecto + "'");
+                System.out.println("[GuardarPistaServlet] Valor ingresado: '" + valorIngresado + "'");
+                
+                if (valorIngresado.equals(codigoCorrecto)) {
                     System.out.println("[GuardarPistaServlet] ✓✓✓ CÓDIGO CORRECTO ✓✓✓");
                     
-                    // Buscar el ID de la pista "Código de la computadora"
-                    Integer pistaId = progresoPistaDAO.findPistaIdByNombre(historiaId, "Código de la computadora");
+                    // Buscar el ID de la pista asociada al código
+                    Integer pistaId = null;
+                    String pistaNombre = docCodigo.getPistaNombre();
                     
-                    System.out.println("[DEBUG] Historia ID: " + historiaId);
-                    System.out.println("[DEBUG] Pista ID encontrado: " + pistaId);
+                    if (pistaNombre != null && !pistaNombre.isEmpty()) {
+                        pistaId = progresoPistaDAO.findPistaIdByNombre(historiaId, pistaNombre);
+                        System.out.println("[DEBUG] Buscando pista: '" + pistaNombre + "' -> ID: " + pistaId);
+                    }
                     
-                    // Si la pista existe, registrarla PRIMERO
+                    // Si la pista existe, registrarla
                     if (pistaId != null) {
-                        System.out.println("[GuardarPistaServlet] Llamando a pdao.guardarPista(" + partidaId + ", " + pistaId + ")");
+                        System.out.println("[GuardarPistaServlet] Guardando pista ID=" + pistaId);
                         boolean guardada = pdao.guardarPista(partidaId, pistaId);
                         System.out.println("[DEBUG] Pista guardada: " + guardada);
                     } else {
-                        System.out.println("[ERROR] No se encontró la pista 'Código de la computadora' para historia_id=" + historiaId);
+                        System.out.println("[INFO] No hay pista específica asociada al código para historia_id=" + historiaId);
                     }
                     
                     System.out.println("[GuardarPistaServlet] Actualizando solución propuesta...");
                     // Actualizar solución propuesta
-                    pdao.actualizarSolucionPropuesta(partidaId, "Código descifrado: " + CODE_OK);
+                    pdao.actualizarSolucionPropuesta(partidaId, "Código descifrado: " + codigoCorrecto);
                     
                     System.out.println("[GuardarPistaServlet] Marcando como ganada...");
-                    // Marcar como ganada (esto NO debe resetear pistas_encontradas)
+                    // Marcar como ganada
                     pdao.marcarGanada(partidaId, 100);
                     
-                    // Verificar y otorgar logros automáticamente
+                    // Verificar y otorgar logros
                     try {
                         Integer userId = (Integer) req.getSession(false).getAttribute("userId");
                         if (userId != null) {
@@ -113,7 +135,9 @@ public class GuardarPistaServlet extends HttpServlet {
                     win = true;
                     System.out.println("[GuardarPistaServlet] ✓ Proceso completado, win=true");
                 } else {
-                    System.out.println("[GuardarPistaServlet] ✗ Código incorrecto o valor null");
+                    System.out.println("[GuardarPistaServlet] ✗ Código incorrecto");
+                    System.out.println("[GuardarPistaServlet]   Esperado: '" + codigoCorrecto + "'");
+                    System.out.println("[GuardarPistaServlet]   Recibido: '" + valorIngresado + "'");
                 }
             } else {
                 System.out.println("[GuardarPistaServlet] ✗ Key NO coincide con 'codigo_pc'");

@@ -24,10 +24,13 @@ CREATE TABLE `usuario` (
   `activo` tinyint(1) DEFAULT '1',
   `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `en_partida` tinyint(1) NOT NULL DEFAULT '0',
+  `liga_actual` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'bronce' COMMENT 'Liga actual del usuario: bronce, plata, oro, platino, diamante',
+  `puntos_totales` int DEFAULT '0' COMMENT 'Puntos acumulados totales (partidas + logros)',
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
   KEY `idx_email` (`email`),
-  KEY `idx_rol` (`rol`)
+  KEY `idx_rol` (`rol`),
+  KEY `idx_liga` (`liga_actual`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla: historia
@@ -234,28 +237,28 @@ FROM ((`partida` `p` JOIN `usuario` `u` ON((`p`.`usuario_id` = `u`.`id`))) JOIN 
 -- ========================================
 
 INSERT INTO `usuario` VALUES 
-(1,'Administrador','admin@mansion.com','6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b','admin','2025-10-22 14:24:07',1,NULL,0),
-(2,'Detective Juan','juan@detective.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-10-22 14:24:07',1,NULL,0),
-(4,'Administrador','adminCapo@mansion.com','6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b','admin','2025-10-22 14:33:59',1,NULL,0),
-(5,'Serena','serena@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-10-22 14:55:55',0,NULL,0),
-(6,'Bruno','bruno@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-10-22 15:07:51',1,NULL,1),
-(7,'Maquina JSAJSAJ','Maquina@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-10-22 16:04:44',1,NULL,0),
-(8,'Jano Martinez Ruiz','jano@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-10-22 20:01:52',1,NULL,0),
-(9,'Juanfra','juanfraa032@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-11-04 22:43:28',1,NULL,1),
-(10,'Manuel','manuel@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-11-19 12:33:04',1,NULL,0),
-(11,'Manuna','manu@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-11-19 12:46:48',1,NULL,0),
-(12,'fsaf','dfs@fdsf','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-11-19 13:01:25',1,NULL,0),
-(13,'Juan Manuel','juanma@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-11-19 13:02:16',1,NULL,0),
-(14,'Menu 2','menu@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-11-19 13:35:37',0,NULL,0),
-(15,'sere','sere22giacomelli@gmail.com','a75dfb04f127df2fb7dbad54350329e73b1664ebd2a20080b23ea60bc3530b91','jugador','2026-01-16 16:47:22',1,NULL,0);
+(1,'Administrador','admin@mansion.com','6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b','admin','2025-10-22 14:24:07',1,NULL,0,'bronce',0),
+(2,'Detective Juan','juan@detective.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-10-22 14:24:07',1,NULL,0,'bronce',0),
+(4,'Administrador','adminCapo@mansion.com','6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b','admin','2025-10-22 14:33:59',1,NULL,0,'bronce',0),
+(5,'Serena','serena@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-10-22 14:55:55',0,NULL,0,'bronce',0),
+(6,'Bruno','bruno@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-10-22 15:07:51',1,NULL,1,'oro',450),
+(7,'Maquina JSAJSAJ','Maquina@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-10-22 16:04:44',1,NULL,0,'bronce',0),
+(8,'Jano Martinez Ruiz','jano@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-10-22 20:01:52',1,NULL,0,'bronce',0),
+(9,'Juanfra','juanfraa032@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-11-04 22:43:28',1,NULL,1,'bronce',0),
+(10,'Manuel','manuel@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-11-19 12:33:04',1,NULL,0,'bronce',0),
+(11,'Manuna','manu@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-11-19 12:46:48',1,NULL,0,'bronce',0),
+(12,'fsaf','dfs@fdsf','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-11-19 13:01:25',1,NULL,0,'bronce',0),
+(13,'Juan Manuel','juanma@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-11-19 13:02:16',1,NULL,0,'bronce',0),
+(14,'Menu 2','menu@gmail.com','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','jugador','2025-11-19 13:35:37',0,NULL,0,'bronce',0),
+(15,'sere','sere22giacomelli@gmail.com','a75dfb04f127df2fb7dbad54350329e73b1664ebd2a20080b23ea60bc3530b91','jugador','2026-01-16 16:47:22',1,NULL,0,'bronce',0);
 
 -- USUARIOS NUEVOS
-INSERT INTO `usuario` (nombre, email, password, rol, activo) VALUES
-('Carlos Mendoza', 'carlos.mendoza@mail.com', 'e10adc3949ba59abbe56e057f20f883e', 'jugador', 1),  -- pass: 123456 (MD5)
-('María López', 'maria.lopez@mail.com', '5f4dcc3b5aa765d61d8327deb882cf99', 'jugador', 1),      -- pass: password (MD5)
-('Pedro Sánchez', 'pedro.sanchez@mail.com', '25d55ad283aa400af464c76d713c07ad', 'jugador', 1),   -- pass: 12345678 (MD5)
-('Ana Ramírez', 'ana.ramirez@mail.com', 'e10adc3949ba59abbe56e057f20f883e', 'jugador', 1),       -- pass: 123456 (MD5)
-('Luis Torres', 'luis.torres@mail.com', '5f4dcc3b5aa765d61d8327deb882cf99', 'jugador', 1);       -- pass: password (MD5)
+INSERT INTO `usuario` (nombre, email, password, rol, activo, liga_actual, puntos_totales) VALUES
+('Carlos Mendoza', 'carlos.mendoza@mail.com', 'e10adc3949ba59abbe56e057f20f883e', 'jugador', 1, 'bronce', 0),
+('María López', 'maria.lopez@mail.com', '5f4dcc3b5aa765d61d8327deb882cf99', 'jugador', 1, 'bronce', 0),
+('Pedro Sánchez', 'pedro.sanchez@mail.com', '25d55ad283aa400af464c76d713c07ad', 'jugador', 1, 'bronce', 0),
+('Ana Ramírez', 'ana.ramirez@mail.com', 'e10adc3949ba59abbe56e057f20f883e', 'jugador', 1, 'bronce', 0),
+('Luis Torres', 'luis.torres@mail.com', '5f4dcc3b5aa765d61d8327deb882cf99', 'jugador', 1, 'bronce', 0);
 
 -- ========================================
 -- DATOS: HISTORIAS
@@ -307,7 +310,18 @@ INSERT INTO `historia` (titulo, descripcion, contexto, activa, dificultad, tiemp
 ('El Archivo Fantasma',
  'Documentos clasificados son robados de un edificio gubernamental con seguridad impenetrable. Alguien de adentro está involucrado.',
  'Archivos sobre experimentos militares desaparecen de un bunker subterráneo con triple autenticación biométrica. El sistema de seguridad no registra intrusos. Cuatro oficiales de alto rango tenían acceso. Deberás descifrar códigos militares, analizar registros digitales y desenmascarar una conspiración interna.',
- 1, 5, 180, 'diamante');
+ 1, 5, 180, 'diamante'),
+
+-- HISTORIAS ADICIONALES
+('El Crimen del Casino Dorado',
+ 'Un jugador profesional es asesinado en un casino de lujo durante una partida de póker de alto riesgo. La mesa tenía 6 jugadores y todos son sospechosos.',
+ 'En el exclusivo Casino Dorado, una partida de póker con apuestas millonarias termina en tragedia cuando el campeón Viktor Romano colapsa envenenado. Los cinco jugadores restantes, el croupier y la gerente del casino tienen motivos, oportunidades y secretos que ocultar. Las cámaras de seguridad muestran que nadie salió de la sala VIP en 2 horas.',
+ 1, 3, 70, 'plata'),
+
+('La Desaparición en la Isla Privada',
+ 'Un millonario desaparece misteriosamente de su isla privada durante una tormenta. Sus invitados son los únicos habitantes de la isla.',
+ 'El magnate tecnológico Sebastián Montero invitó a 8 personas a su isla paradisíaca para anunciar su retiro. Durante una tormenta tropical, desaparece sin dejar rastro. El yate no puede zarpar por el mal tiempo, las comunicaciones están caídas. Uno de los invitados sabe qué pasó, pero todos tienen razones para mentir.',
+ 1, 5, 200, 'diamante');
 
 -- ========================================
 -- DATOS: PERSONAJES
@@ -378,6 +392,27 @@ INSERT INTO personaje (nombre, descripcion, coartada, motivo, sospechoso, culpab
 ('Fernando Salvatierra', 'Hermano del patriarca, socio minoritario', 'En la biblioteca leyendo', 'Resentimiento histórico - siempre estuvo a la sombra', 1, 0, 9),
 ('Lucía Márquez', 'Secretaria personal durante 35 años', 'Organizando papeles en la oficina', 'Salvatierra descubrió que robaba información para la competencia', 1, 0, 9),
 ('Abogado Julio Mendoza', 'Abogado de la familia', 'En su despacho preparando documentos', 'Conoce el contenido del testamento - posible conspiración', 1, 0, 9);
+
+-- Personajes nuevos (Historia 11: El Crimen del Casino Dorado)
+INSERT INTO personaje (nombre, descripcion, coartada, motivo, sospechoso, culpable, historia_id) VALUES
+('Viktor Romano', 'Jugador profesional de póker, víctima del envenenamiento. Campeón mundial tres veces consecutivas.', 'N/A - Víctima', 'N/A', 0, 0, 11),
+('Marco Rossi', 'Empresario italiano. Perdió $2 millones contra Viktor en la última partida. Nervioso y agresivo.', 'Estuvo en la mesa todo el tiempo, múltiples testigos.', 'Viktor lo arruinó financieramente y amenazó con exponer sus fraudes empresariales', 1, 1, 11),
+('Diane Chen', 'Jugadora profesional asiática. Fría y calculadora. Ex pareja de Viktor.', 'Jugando en la mesa, nunca se levantó.', 'Viktor la dejó públicamente hace 6 meses, arruinando su reputación', 1, 0, 11),
+('Thomas Bradford', 'Magnate del petróleo estadounidense. Apostador compulsivo con deudas millonarias.', 'En la mesa de póker, confirmado por cámaras.', 'Debía $5 millones a Viktor por apuestas pasadas', 1, 0, 11),
+('Isabella Marini', 'Gerente del casino. Elegante, profesional. Tiene acceso total a las instalaciones.', 'Supervisando la partida desde la cabina de control.', 'El casino perdería su licencia si se descubre que Viktor hacía trampa con su ayuda', 1, 0, 11),
+('Jean-Pierre Dubois', 'Croupier francés. 15 años de experiencia. Manos temblorosas durante el incidente.', 'Repartiendo cartas en la mesa, en el centro de la acción.', 'Viktor descubrió que manipulaba cartas y amenazó con denunciarlo', 1, 0, 11),
+('Sofia Mendoza', 'Camarera de la sala VIP. Joven, nerviosa. Única que sirvió bebidas.', 'Sirvió bebidas a todos los jugadores durante la partida.', 'Viktor acosó a su hermana menor meses atrás', 1, 0, 11);
+
+-- Personajes nuevos (Historia 12: La Desaparición en la Isla Privada)
+INSERT INTO personaje (nombre, descripcion, coartada, motivo, sospechoso, culpable, historia_id) VALUES
+('Sebastián Montero', 'Millonario tecnológico, dueño de la isla. Desaparecido misteriosamente.', 'N/A - Desaparecido', 'N/A', 0, 0, 12),
+('Dr. Fernando Santiago', 'Socio comercial de 20 años. Científico brillante con resentimientos ocultos.', 'Estaba en su bungalow durante la tormenta, solo.', 'Sebastián planeaba vender la empresa sin consultarle, dejándolo sin nada', 1, 1, 12),
+('Victoria Montero', 'Hermana de Sebastián. Heredera del imperio familiar si él desaparece.', 'Caminando por la playa, nadie la vio.', 'Sebastián iba a cambiar su testamento, quitándole la herencia', 1, 0, 12),
+('Lucas Herrera', 'Abogado personal. Maneja todos los secretos legales de Sebastián.', 'En la biblioteca revisando documentos.', 'Sebastián descubrió malversación de fondos y planeaba denunciarlo', 1, 0, 12),
+('Catalina Ruiz', 'Asistente personal. Leal por 10 años, pero con secretos.', 'Organizando archivos en la oficina principal.', 'Sebastián rechazó su confesión amorosa brutalmente', 1, 0, 12),
+('Ricardo Paz', 'Guardaespaldas jefe. Ex militar. Eficiente y letal.', 'Patrullando el perímetro norte de la isla.', 'Sebastián planeaba despedirlo por un incidente previo', 1, 0, 12),
+('Marina del Valle', 'Chef privada. Prepara todas las comidas de la isla.', 'En la cocina preparando la cena.', 'Sebastián amenazó con arruinar su carrera por un plato en mal estado', 1, 0, 12),
+('Andrés Campos', 'Ingeniero de sistemas. Mantiene toda la tecnología de la isla.', 'En el cuarto de servidores reparando comunicaciones.', 'Sebastián robó su invención tecnológica años atrás', 1, 0, 12);
 
 -- Personajes nuevos (Historia 10: El Archivo Fantasma)
 INSERT INTO personaje (nombre, descripcion, coartada, motivo, sospechoso, culpable, historia_id) VALUES
@@ -470,6 +505,25 @@ INSERT INTO ubicacion (nombre, descripcion, accesible, imagen, historia_id) VALU
 ('Jardín de Hierbas', 'Plantas medicinales y venenosas', 1, NULL, 9),
 ('Habitación de Cristina', 'Suite de la viuda joven', 1, NULL, 9),
 ('Despacho del Abogado', 'Oficina anexa con documentos legales', 1, NULL, 9);
+
+-- Ubicaciones nuevas (Historia 11: El Crimen del Casino Dorado)
+INSERT INTO ubicacion (nombre, descripcion, accesible, imagen, historia_id) VALUES
+('Sala VIP Diamante', 'Sala privada de póker con mesa de madera de caoba y sillas de cuero. Iluminación tenue y elegante.', 1, NULL, 11),
+('Bar del Casino', 'Barra de mármol con licores premium. El barman prepara cócteles personalizados.', 1, NULL, 11),
+('Cabina de Seguridad', 'Centro de monitoreo con 40 pantallas de vigilancia. Acceso restringido.', 1, NULL, 11),
+('Baño VIP', 'Baño de lujo con acabados dorados. Único baño accesible desde la sala.', 1, NULL, 11),
+('Oficina de la Gerente', 'Oficina elegante con vistas al piso del casino. Documentos confidenciales por todas partes.', 1, NULL, 11),
+('Bodega de Licores', 'Almacén con vinos y licores de colección. Temperatura controlada.', 1, NULL, 11);
+
+-- Ubicaciones nuevas (Historia 12: La Desaparición en la Isla Privada)
+INSERT INTO ubicacion (nombre, descripcion, accesible, imagen, historia_id) VALUES
+('Villa Principal', 'Mansión de 3 pisos con vistas al océano. Tecnología de punta y lujos excesivos.', 1, NULL, 12),
+('Muelle Privado', 'Embarcadero con yate de $20 millones. Dañado por la tormenta, no puede zarpar.', 1, NULL, 12),
+('Búnker Subterráneo', 'Refugio de emergencia bajo la villa. Provisiones para 6 meses. Acceso sellado.', 1, NULL, 12),
+('Torre de Comunicaciones', 'Antena de telecomunicaciones. Saboteada durante la tormenta.', 1, NULL, 12),
+('Playa Norte', 'Playa privada con arena blanca. Huellas borradas por la marea.', 1, NULL, 12),
+('Laboratorio Secreto', 'Lab oculto donde Sebastián desarrollaba tecnología experimental. Nadie sabía de su existencia.', 1, NULL, 12),
+('Casa del Guardián', 'Residencia del personal de seguridad. Vista estratégica de toda la isla.', 1, NULL, 12);
 
 -- Ubicaciones nuevas (Historia 10: El Archivo Fantasma)
 INSERT INTO ubicacion (nombre, descripcion, accesible, imagen, historia_id) VALUES
@@ -612,8 +666,9 @@ INSERT INTO documento (historia_id, clave, nombre, icono, contenido, codigo_corr
 <tr><td>15:43</td><td>Isabella Chen</td><td>Recepción</td><td>Atendiendo llamadas</td></tr>
 <tr><td>15:50</td><td>DESAPARICIÓN DEL RELOJ REPORTADA</td><td>---</td><td>Alarma activada</td></tr>
 </table>
-<p><strong>ANOMALÍA:</strong> Thomas Baker estuvo 8 minutos en el almacén sin justificación durante el horario crítico.</p>', 
-NULL, 'Video de Seguridad'),
+<p><strong>ANOMALÍA:</strong> Thomas Baker estuvo 8 minutos en el almacén sin justificación durante el horario crítico.</p>
+<p><strong>💡 PISTA FINAL:</strong> Todas las evidencias apuntan al apellido del subastador corrupto. Ingresá su apellido en MAYÚSCULAS.</p>', 
+'BAKER', 'Video de Seguridad'),
 
 (3, 'registro_subastas', 'Registro de Subastas', '📋', 
 '<h3>Historial de Transacciones - Enero 2026</h3>
@@ -659,8 +714,9 @@ NULL, NULL),
 </ol>
 <h4>Anexo Confidencial (Filtrado):</h4>
 <p><em>"Bellini descubrió malversación de $340,000. Amenaza con denunciar antes del estreno."</em></p>
-<p><strong>Firmantes:</strong> A. Bellini ✍️ | G. Esposito ✍️</p>', 
-NULL, NULL);
+<p><strong>Firmantes:</strong> A. Bellini ✍️ | G. Esposito ✍️</p>
+<p><strong>💡 PISTA FINAL:</strong> El apellido de la víctima es la clave del caso. 7 letras, empieza con B. Ingresalo en MAYÚSCULAS.</p>', 
+'BELLINI', 'Contrato del Director');
 
 -- Documentos nuevos (Historia 5: Muerte en el Expreso Nocturno)
 INSERT INTO documento (historia_id, clave, nombre, icono, contenido, codigo_correcto, pista_nombre) VALUES
@@ -698,13 +754,36 @@ NULL, NULL),
 <tr><td>Sra. Dubois</td><td>Durmiendo</td><td>❌ Sin confirmar</td></tr>
 <tr><td>Inspector Ivanov</td><td>Investigando discretamente</td><td>⚠️ Visto cerca del compartimento A1</td></tr>
 </table>
-<p><strong>CRUCIAL:</strong> Ventana de 45 minutos donde cualquiera pudo acceder al compartimento.</p>', 
-NULL, NULL);
+<p><strong>CRUCIAL:</strong> Ventana de 45 minutos donde cualquiera pudo acceder al compartimento.</p>
+<p><strong>💡 PISTA FINAL:</strong> El código está en los datos del compartimento donde murió Volkov (fila 1) y la hora militar exacta del descubrimiento (sin dos puntos). Formato: A#HHMM sin letras ni símbolos. Ejemplo: Si murió en B2 a las 13:05 sería "1305".</p>', 
+'1305', 'Horario del Tren');
 
 -- Documentos nuevos (Historia 6: El Enigma de la Galería Oscura)
 INSERT INTO documento (historia_id, clave, nombre, icono, contenido, codigo_correcto, pista_nombre) VALUES
-(6, 'catalogo_obras', 'Catálogo de Obras', '🎨', 'Catálogo completo de todas las obras de la galería con valoraciones actualizadas.', NULL, NULL),
-(6, 'informe_policial', 'Informe Policial', '👮', 'Análisis forense de las escenas de los tres robos anteriores. Patrón identificado.', NULL, 'Mensaje Cifrado 1');
+(6, 'catalogo_obras', 'Catálogo de Obras', '🎨', 
+'<h3>Inventario - Galería Monet</h3>
+<p><strong>Piezas Robadas:</strong></p>
+<table border="1" style="width:100%;">
+<tr><th>Fecha</th><th>Obra</th><th>Valor</th><th>Sala</th></tr>
+<tr><td>05/01</td><td>Noche Estrellada (Réplica)</td><td>$85,000</td><td>Sala 6</td></tr>
+<tr><td>12/01</td><td>El Grito (Copia Certificada)</td><td>$120,000</td><td>Sala 2</td></tr>
+<tr><td>19/01</td><td>La Persistencia de la Memoria</td><td>$340,000</td><td>Sala 7</td></tr>
+<tr><td>26/01</td><td><strong>La Mona Lisa Moderna</strong></td><td>$1.2M</td><td>Sala 4 - ⚠️ Próximo objetivo</td></tr>
+</table>
+<p><strong>Nota del curador:</strong> Los números de sala forman un patrón: 6-2-7-4. ¿Casualidad o mensaje?</p>', 
+NULL, NULL),
+(6, 'informe_policial', 'Informe Policial', '👮', 
+'<h3>Análisis Criminal - Caso Galería Monet</h3>
+<h4>Patrón Identificado:</h4>
+<p>Los robos ocurren cada 7 días exactamente. El ladrón deja mensajes cifrados.</p>
+<p><strong>Mensaje encontrado en Robo #3:</strong></p>
+<p style="font-family:monospace; background:#f0f0f0; padding:10px; border:2px solid #333;">
+"Los números de las salas donde robé revelan mi próximo objetivo.<br>
+No es casualidad: <strong>6-2-7-4</strong><br>
+Este código abrirá mi secreto."</p>
+<p><strong>Análisis de Inteligencia:</strong> El código 6274 podría ser la combinación de una caja fuerte o el PIN de un sistema de seguridad que el ladrón planea usar.</p>
+<p><strong>💡 PISTA FINAL:</strong> El código correcto son los 4 números de las salas en orden cronológico de los robos.</p>', 
+'6274', 'Mensaje Cifrado Principal');
 
 -- Documentos nuevos (Historia 7: El Caso del Manuscrito Perdido)
 INSERT INTO documento (historia_id, clave, nombre, icono, contenido, codigo_correcto, pista_nombre) VALUES
@@ -726,9 +805,9 @@ INSERT INTO documento (historia_id, clave, nombre, icono, contenido, codigo_corr
 (7, 'correo_comprador', 'Email Interceptado', '📧', 
 '<h3>Comunicación Encriptada [DESENCRIPTADA]</h3>
 <p><strong>De:</strong> [email protected]</p>
-<p><strong>Para:</strong> [email protected]</p>
+<p><strong>Para:</strong> prof.whitfield@university.edu</p>
 <p><strong>Asunto:</strong> RE: Adquisición Especial</p>
-<p>Profesor,</p>
+<p>Profesor <strong>WHITFIELD</strong>,</p>
 <p>Confirmamos el pago de <strong>USD $2,000,000</strong> en cuenta offshore por la adquisición del manuscrito Voynich 2.0.</p>
 <p><strong>Condiciones:</strong></p>
 <ul>
@@ -738,8 +817,9 @@ INSERT INTO documento (historia_id, clave, nombre, icono, contenido, codigo_corr
 </ul>
 <p>La transferencia se completará una vez verificada la autenticidad.</p>
 <p>Coordenadas de entrega: [CENSURADO]</p>
+<p><strong>💡 PISTA FINAL:</strong> El apellido del profesor corrupto (9 letras en MAYÚSCULAS) es la clave del caso.</p>
 <p><em>Este mensaje se autodestruirá en 24 horas</em></p>', 
-NULL, 'Email Encriptado'),
+'WHITFIELD', 'Email del Comprador Ilegal'),
 
 (7, 'analisis_particulas', 'Análisis Forense', '🔬', 
 '<h3>Reporte de Laboratorio Forense</h3>
@@ -795,13 +875,14 @@ NULL, 'Código de Acceso Clonado'),
 <p><strong>Para:</strong> j.patterson@institute.org</p>
 <p><strong>Fecha:</strong> 18/01/2026 - 22:37</p>
 <p><strong>Asunto:</strong> Plagio y Consecuencias</p>
-<p>James,</p>
+<p>James <strong>PATTERSON</strong>,</p>
 <p>He descubierto que tu "innovadora investigación" sobre catalizadores moleculares es en realidad MI trabajo de los últimos 3 años.</p>
 <p>Los datos en tu solicitud de patente son idénticos a mis notas privadas del servidor seguro.</p>
 <p><strong>Tenés 48 horas para retractarte públicamente o presentaré evidencia ante el comité de ética.</strong></p>
 <p>Tu carrera acabará. No habrá segunda oportunidad.</p>
-<p>- Viktor</p>', 
-NULL, 'Email de Amenaza');
+<p>- Viktor</p>
+<p><strong>💡 PISTA FINAL:</strong> El apellido del Dr. culpable (mencionado múltiples veces en mayúsculas) es la solución. 9 letras, empieza con P.</p>', 
+'PATTERSON', 'Email de Amenaza a Patterson');
 
 -- Documentos nuevos (Historia 9: La Herencia del Patriarca)
 INSERT INTO documento (historia_id, clave, nombre, icono, contenido, codigo_correcto, pista_nombre) VALUES
@@ -848,7 +929,7 @@ NULL, 'Copa Contaminada'),
 <p><strong>Fecha:</strong> 14/01/2026 - 20:15</p>
 <p><strong>Participantes:</strong> Edmundo Salvatierra y Tomás Salvatierra</p>
 <hr>
-<p><strong>Edmundo:</strong> "Tomás, necesito que sepas algo antes de mañana."</p>
+<p><strong>Edmundo:</strong> "<strong>TOMÁS</strong>, necesito que sepas algo antes de mañana."</p>
 <p><strong>Tomás:</strong> "¿De qué se trata, padre?"</p>
 <p><strong>Edmundo:</strong> "He modificado mi testamento. Rodrigo no recibirá la empresa."</p>
 <p><strong>Tomás:</strong> "Yo tampoco la quiero. Sabés que prefiero mi consultorio."</p>
@@ -858,8 +939,129 @@ NULL, 'Copa Contaminada'),
 <p><strong>Tomás:</strong> "Esto va a destruir a la familia."</p>
 <p><strong>Edmundo:</strong> "La justicia es más importante que la paz falsa."</p>
 <hr>
-<p><em>[Conversación termina abruptamente]</em></p>', 
-NULL, 'Conversación Grabada');
+<p><em>[Conversación termina abruptamente]</em></p>
+<p><strong>💡 ANÁLISIS FORENSE:</strong> Las huellas en la copa de morfina y el testamento apuntan al nombre del hijo heredero principal (5 letras, empieza con T). Ingresalo en MAYÚSCULAS.</p>', 
+'TOMAS', 'Audio del Culpable');
+
+-- Documentos nuevos (Historia 11: El Crimen del Casino Dorado)
+INSERT INTO documento (historia_id, clave, nombre, icono, contenido, codigo_correcto, pista_nombre) VALUES
+(11, 'analisis_toxicologico', 'Análisis Toxicológico', '☠️',
+'<h3>Reporte Forense - Viktor Romano</h3>
+<p><strong>Causa de muerte:</strong> Envenenamiento agudo por cianuro</p>
+<p><strong>Sustancia:</strong> Cianuro de potasio (KCN) - dosis letal</p>
+<p><strong>Vía de administración:</strong> Oral (bebida)</p>
+<p><strong>Tiempo estimado:</strong> 5-10 minutos antes del colapso</p>
+<h4>Análisis de Bebidas:</h4>
+<table border="1" style="width:100%;">
+<tr><th>Persona</th><th>Bebida</th><th>Resultado</th></tr>
+<tr><td>Viktor Romano</td><td>Whisky escocés</td><td>⚠️ POSITIVO - Cianuro detectado</td></tr>
+<tr><td>Marco Rossi</td><td>Martini</td><td>✓ Negativo</td></tr>
+<tr><td>Diane Chen</td><td>Vino tinto</td><td>✓ Negativo</td></tr>
+<tr><td>Thomas Bradford</td><td>Bourbon</td><td>✓ Negativo</td></tr>
+</table>
+<p><strong>Conclusión:</strong> Solo la bebida de Viktor contenía veneno.</p>',
+NULL, NULL),
+
+(11, 'video_vigilancia', 'Video de Seguridad', '📹',
+'<h3>Grabación - Sala VIP Diamante</h3>
+<p><strong>Fecha:</strong> 26/01/2026 | <strong>Hora:</strong> 21:30 - 23:15</p>
+<h4>Eventos Clave Registrados:</h4>
+<table border="1" style="width:100%;">
+<tr><th>Hora</th><th>Evento</th><th>Observaciones</th></tr>
+<tr><td>21:30</td><td>Partida comienza</td><td>6 jugadores sentados</td></tr>
+<tr><td>21:47</td><td>Sofia Mendoza sirve bebidas</td><td>Entrega whisky a Viktor</td></tr>
+<tr><td>22:03</td><td>Marco <strong>ROSSI</strong> discute con Viktor</td><td>⚠️ Intercambio violento de palabras</td></tr>
+<tr><td>22:15</td><td>Marco se levanta brevemente</td><td>Va al baño, regresa en 3 minutos</td></tr>
+<tr><td>22:34</td><td>Viktor bebe su whisky</td><td>Primera vez que toca su vaso</td></tr>
+<tr><td>22:41</td><td>Viktor comienza a sentirse mal</td><td>Sudoración, dificultad respiratoria</td></tr>
+<tr><td>22:43</td><td>Viktor colapsa</td><td>Emergencia declarada</td></tr>
+</table>
+<p><strong>Nota crítica:</strong> Marco <strong>ROSSI</strong> fue la única persona cerca del vaso de Viktor durante su ausencia al baño.</p>',
+NULL, NULL),
+
+(11, 'informe_financiero', 'Informe Financiero', '💰',
+'<h3>Análisis Financiero - Marco Rossi</h3>
+<p><strong>Sujeto:</strong> Marco <strong>ROSSI</strong>, empresario italiano</p>
+<p><strong>Situación:</strong> Quiebra inminente</p>
+<h4>Pérdidas Recientes:</h4>
+<ul>
+<li><strong>15/01/2026:</strong> Perdió $850,000 contra Viktor Romano</li>
+<li><strong>20/01/2026:</strong> Perdió $1.2M en apuesta de fútbol</li>
+<li><strong>24/01/2026:</strong> Perdió $2M en partida privada</li>
+</ul>
+<h4>Deudas Totales:</h4>
+<p><strong>$8.5 millones</strong> a diversos acreedores</p>
+<h4>Email Interceptado (25/01/2026):</h4>
+<p><em>"Marco, tenés 48 horas para pagar o publicaremos todo sobre tus fraudes. - Viktor R."</em></p>
+<p><strong>💡 PISTA FINAL:</strong> El apellido del empresario italiano en bancarrota (5 letras en MAYÚSCULAS) es la clave del caso. Todas las evidencias apuntan a él.</p>',
+'ROSSI', 'Perfil Financiero del Culpable'),
+
+(11, 'registro_entrada', 'Registro de Acceso', '🚪',
+'<h3>Control de Acceso - Sala VIP</h3>
+<p><strong>Sistema de Tarjetas RFID</strong></p>
+<table border="1" style="width:100%;">
+<tr><th>Hora</th><th>Persona</th><th>Acción</th></tr>
+<tr><td>21:25</td><td>Isabella Marini (Gerente)</td><td>Entrada - Preparar sala</td></tr>
+<tr><td>21:28</td><td>Jean-Pierre Dubois (Croupier)</td><td>Entrada - Setup mesa</td></tr>
+<tr><td>21:30</td><td>Viktor Romano</td><td>Entrada</td></tr>
+<tr><td>21:32</td><td>Marco Rossi</td><td>Entrada</td></tr>
+<tr><td>21:33</td><td>Diane Chen</td><td>Entrada</td></tr>
+<tr><td>21:35</td><td>Thomas Bradford</td><td>Entrada</td></tr>
+<tr><td>22:15</td><td>Marco Rossi</td><td>⚠️ Salida temporal (baño)</td></tr>
+<tr><td>22:18</td><td>Marco Rossi</td><td>Reingreso</td></tr>
+</table>
+<p><strong>Observación:</strong> Marco Rossi fue el único que salió y regresó durante el periodo crítico.</p>',
+NULL, NULL);
+
+-- Documentos nuevos (Historia 12: La Desaparición en la Isla Privada)
+INSERT INTO documento (historia_id, clave, nombre, icono, contenido, codigo_correcto, pista_nombre) VALUES
+(12, 'bitacora_yate', 'Bitácora del Yate', '⛵',
+'<h3>Registro de Navegación - MONTERO I</h3>
+<p><strong>Última entrada:</strong> 27/01/2026 - 18:45</p>
+<p><strong>Capitán:</strong> Ricardo Paz (guardaespaldas)</p>
+<h4>Entradas Recientes:</h4>
+<p><strong>27/01 - 14:30:</strong> "Dr. Santiago solicitó revisión de motores. Todo en orden."</p>
+<p><strong>27/01 - 16:20:</strong> "Tormenta aproximándose. Yate asegurado en muelle."</p>
+<p><strong>27/01 - 18:45:</strong> "Sebastián inspeccionó el yate solo. Parecía nervioso."</p>
+<p><strong>27/01 - 22:10:</strong> "Sebastián NO REGRESÓ de su caminata nocturna."</p>
+<p><strong>Observación:</strong> Dr. <strong>SANTIAGO</strong> fue la última persona vista con Sebastián antes de la desaparición según cámaras de seguridad del muelle.</p>',
+NULL, NULL),
+
+(12, 'email_amenaza', 'Email Encriptado', '📧',
+'<h3>Comunicación Recuperada</h3>
+<p><strong>De:</strong> sebastian.montero@techcorp.com</p>
+<p><strong>Para:</strong> fernando.santiago@techcorp.com</p>
+<p><strong>Fecha:</strong> 25/01/2026 - 23:47</p>
+<p><strong>Asunto:</strong> URGENTE - Necesitamos hablar</p>
+<p>Fernando <strong>SANTIAGO</strong>,</p>
+<p>Descubrí lo que hiciste con los fondos de investigación. $12 millones desviados a tu cuenta personal en las Caimán.</p>
+<p>Tengo las pruebas. Si no me das explicaciones satisfactorias este fin de semana en la isla, presentaré todo ante las autoridades el lunes.</p>
+<p>Esta es tu última oportunidad de arreglar esto antes de que tu carrera termine.</p>
+<p>- Sebastián</p>
+<p><strong>💡 PISTA FINAL:</strong> El apellido del socio traicionero (8 letras en MAYÚSCULAS) es la clave. Los registros financieros y el email lo incriminan directamente.</p>',
+'SANTIAGO', 'Email Incriminatorio'),
+
+(12, 'informe_forense', 'Análisis de la Escena', '🔍',
+'<h3>Investigación Preliminar - Desaparición</h3>
+<p><strong>Sujeto:</strong> Sebastián Montero (45 años)</p>
+<p><strong>Última vez visto:</strong> 27/01/2026 - 20:30 hrs</p>
+<h4>Evidencia Encontrada:</h4>
+<ul>
+<li><strong>Playa Norte:</strong> Huellas de 2 personas, una con zapatos talla 43 (coincide con Dr. Santiago)</li>
+<li><strong>Laboratorio:</strong> Signos de lucha, documento rasgado con palabra "SANTIAGO"</li>
+<li><strong>Muelle:</strong> Manchas de sangre tipo AB+ (tipo sanguíneo de Sebastián)</li>
+<li><strong>Búnker:</strong> Puerta forzada desde afuera, huellas dactilares de Dr. Santiago</li>
+</ul>
+<h4>Cronología:</h4>
+<table border="1" style="width:100%;">
+<tr><th>Hora</th><th>Evento</th><th>Testigo</th></tr>
+<tr><td>20:15</td><td>Sebastián sale de la villa</td><td>Catalina Ruiz</td></tr>
+<tr><td>20:30</td><td>Visto hablando con Dr. Santiago en el muelle</td><td>Cámaras de seguridad</td></tr>
+<tr><td>20:45</td><td>Dr. Santiago regresa solo, nervioso</td><td>Marina del Valle</td></tr>
+<tr><td>21:30</td><td>Sebastián reportado como desaparecido</td><td>Victoria Montero</td></tr>
+</table>
+<p><strong>Conclusión:</strong> Dr. Fernando Santiago es el principal sospechoso.</p>',
+NULL, NULL);
 
 -- Documentos nuevos (Historia 10: El Archivo Fantasma)
 INSERT INTO documento (historia_id, clave, nombre, icono, contenido, codigo_correcto, pista_nombre) VALUES
@@ -904,7 +1106,7 @@ NULL, 'Amenaza Encubierta'),
 
 (10, 'informe_ia', 'Análisis de Inteligencia Artificial', '🤖', 
 '<h3>Sistema de Detección de Anomalías - IA Sentinel</h3>
-<p><strong>Patrón de comportamiento analizado:</strong> Mayor Ricardo Santana</p>
+<p><strong>Patrón de comportamiento analizado:</strong> Mayor Ricardo <strong>SANTANA</strong></p>
 <p><strong>Periodo:</strong> Últimos 30 días</p>
 <h4>Anomalías Detectadas:</h4>
 <ul>
@@ -916,8 +1118,9 @@ NULL, 'Amenaza Encubierta'),
 <h4>Evaluación Psicológica Automatizada:</h4>
 <p><strong>Conclusión:</strong> Sujeto bajo coacción externa con 94.7% de probabilidad.</p>
 <p><strong>Recomendación:</strong> Investigación inmediata de entorno familiar y posible chantaje.</p>
-<p><em>Este perfil fue generado 48 horas antes del incidente pero no fue revisado a tiempo.</em></p>', 
-NULL, 'Confesión Parcial');
+<p><em>Este perfil fue generado 48 horas antes del incidente pero no fue revisado a tiempo.</em></p>
+<p><strong>💡 PISTA FINAL:</strong> El apellido del Mayor infiltrado (7 letras en MAYÚSCULAS) es la clave. Está repetido en todos los logs de acceso y emails interceptados.</p>', 
+'SANTANA', 'Perfil del Infiltrado');
 
 -- ========================================
 -- DATOS: LOGROS

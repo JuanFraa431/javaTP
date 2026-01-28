@@ -75,8 +75,15 @@ public class UploadAvatarServlet extends HttpServlet {
                 throw new InvalidImageException("Extensión de archivo no permitida");
             }
             
-            // Crear directorio de avatares si no existe
-            String uploadPath = getServletContext().getRealPath("") + File.separator + "avatars";
+            // SOLUCIÓN PERMANENTE: Usar una ruta absoluta fija fuera del deployment
+            // Opción 1: Usar propiedad del sistema (configurable)
+            // Opción 2: Usar ruta fija del proyecto
+            String uploadPath = System.getProperty("avatar.upload.dir");
+            if (uploadPath == null || uploadPath.isEmpty()) {
+                // Fallback a ruta del proyecto
+                uploadPath = "C:/Users/sere-/Desktop/java/javaTP/src/main/webapp/avatars";
+            }
+            
             File uploadDir = new File(uploadPath);
             if (!uploadDir.exists()) {
                 uploadDir.mkdirs();

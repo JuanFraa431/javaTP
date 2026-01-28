@@ -1,10 +1,11 @@
 package logic;
 
+import data.ClasificacionDAO;
+import data.DocumentoDAO;
 import data.LogroDAO;
 import data.PartidaDAO;
-import data.DocumentoDAO;
+import data.UsuarioDAO;
 import entities.Partida;
-
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -18,6 +19,8 @@ public class LogroService {
     private final LogroDAO logroDAO = new LogroDAO();
     private final PartidaDAO partidaDAO = new PartidaDAO();
     private final DocumentoDAO documentoDAO = new DocumentoDAO();
+    private final UsuarioDAO usuarioDAO = new UsuarioDAO();
+    private final ClasificacionDAO clasificacionDAO = new ClasificacionDAO();
     
     /**
      * Verifica y otorga todos los logros aplicables después de que una partida termine
@@ -39,6 +42,27 @@ public class LogroService {
         verificarMadrugador(partida);
         verificarNocturno(partida);
         verificarPersistente(usuarioId);
+        
+        // CRÍTICO: Después de verificar los logros, actualizar la liga y puntos del usuario
+        // Esto asegura que la progresión persista entre reinicios del servidor
+        actualizarLigaUsuario(usuarioId);
+    }
+    
+    /**
+     * Calcula y persiste la liga actual del usuario basada en sus puntos totales.
+     * Este método se llama automáticamente después de:
+     * 1. Finalizar una partida ganada
+     * 2. Desbloquear logros
+     */
+    private void actualizarLigaUsuario(int usuarioId) throws SQLException {
+        // Calcular puntos totales desde las partidas y logros
+        int puntosTotales = clasificacionDAO.calcularPuntosTotales(usuarioId);
+        
+        // Determinar la liga según los puntos
+        String ligaActual = clasificacionDAO.getLigaPorPuntos(puntosTotales);
+        
+        // Persistir en la base de datos
+        usuarioDAO.actualizarLigaYPuntos(usuarioId, ligaActual, puntosTotales);
     }
     
     /**

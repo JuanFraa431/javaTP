@@ -53,8 +53,13 @@ public class ForgotPasswordServlet extends HttpServlet {
             // Generar contraseña temporal (8 caracteres alfanuméricos)
             String tempPassword = generateTempPassword();
             
+            System.out.println("DEBUG ForgotPassword: Generando contraseña temporal para usuario ID=" + usuario.getId() + ", email=" + email);
+            System.out.println("DEBUG ForgotPassword: Contraseña temporal generada: " + tempPassword);
+            
             // Actualizar la contraseña en la base de datos
             boolean updated = dao.updatePassword(usuario.getId(), tempPassword);
+            
+            System.out.println("DEBUG ForgotPassword: updatePassword returned: " + updated);
             
             if (updated) {
                 // En producción, enviarías esto por email

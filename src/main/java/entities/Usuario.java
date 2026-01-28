@@ -10,6 +10,8 @@ public class Usuario {
     private String rol;   // "INVITADO" | "JUGADOR" | "ADMIN"
     private boolean activo; // <-- NUEVO campo para el estado del usuario
     private String avatar; // Ruta del archivo de avatar (ej: "avatars/123.jpg")
+    private String ligaActual; // Liga actual del usuario: bronce, plata, oro, platino, diamante
+    private int puntosTotales; // Puntos totales acumulados (partidas + logros)
 
     // --- Getters y Setters ---
     public int getId() { return id; }
@@ -40,4 +42,11 @@ public class Usuario {
     // --- NUEVO: campo avatar ---
     public String getAvatar() { return avatar; }
     public void setAvatar(String avatar) { this.avatar = avatar; }
+    
+    // --- NUEVO: campos de liga y puntos ---
+    public String getLigaActual() { return ligaActual; }
+    public void setLigaActual(String ligaActual) { this.ligaActual = ligaActual; }
+    
+    public int getPuntosTotales() { return puntosTotales; }
+    public void setPuntosTotales(int puntosTotales) { this.puntosTotales = puntosTotales; }
 }
