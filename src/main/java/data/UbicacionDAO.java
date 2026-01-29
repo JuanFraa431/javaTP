@@ -15,7 +15,7 @@ public class UbicacionDAO {
         String sql = "SELECT id, nombre, descripcion, accesible, imagen, historia_id " +
                      "FROM ubicacion WHERE historia_id = ? ORDER BY id";
         
-        try (Connection conn = DbConn.get();
+        try (Connection conn = DbConn.getInstancia().getConn();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, historiaId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -42,7 +42,7 @@ public class UbicacionDAO {
                      "FROM ubicacion WHERE historia_id = ? AND accesible = 1 " +
                      "ORDER BY id LIMIT 1";
         
-        try (Connection conn = DbConn.get();
+        try (Connection conn = DbConn.getInstancia().getConn();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, historiaId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -68,7 +68,7 @@ public class UbicacionDAO {
         String sql = "SELECT id, nombre, descripcion, accesible, imagen, historia_id " +
                      "FROM ubicacion WHERE id = ?";
         
-        try (Connection conn = DbConn.get();
+        try (Connection conn = DbConn.getInstancia().getConn();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {

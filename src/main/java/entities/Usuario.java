@@ -9,7 +9,7 @@ public class Usuario {
     private byte[] passwordHash;
     private String rol;   // "INVITADO" | "JUGADOR" | "ADMIN"
     private boolean activo; // <-- NUEVO campo para el estado del usuario
-    private String avatar; // Ruta del archivo de avatar (ej: "avatars/123.jpg")
+    private String avatar; // Nombre del archivo de avatar predefinido (ej: "avatar1.png")
     private String ligaActual; // Liga actual del usuario: bronce, plata, oro, platino, diamante
     private int puntosTotales; // Puntos totales acumulados (partidas + logros)
 

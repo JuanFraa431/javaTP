@@ -190,15 +190,17 @@
 
     // Cargar documentos desde el servidor
     const documentos = [
-        <% for (int i = 0; i < documentos.size(); i++) {
+        <%
+        for (int i = 0; i < documentos.size(); i++) {
             entities.Documento doc = documentos.get(i);
+            if (i > 0) out.print(",");
         %>
         {
             clave: '<%= doc.getClave() %>',
             nombre: '<%= doc.getNombre().replace("'", "\\'") %>',
             icono: '<%= doc.getIcono() %>',
             contenido: `<%= doc.getContenido().replace("`", "\\`").replace("\n", " ") %>`
-        }<%= i < documentos.size() - 1 ? "," : "" %>
+        }
         <% } %>
     ];
 

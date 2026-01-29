@@ -23,7 +23,7 @@ public class AvatarServlet extends HttpServlet {
         String userIdParam = req.getParameter("userId");
         
         if (userIdParam == null || userIdParam.isEmpty()) {
-            serveDefaultAvatar(resp);
+            serveDefaultAvatar(resp, req);
             return;
         }
         
@@ -35,21 +35,22 @@ public class AvatarServlet extends HttpServlet {
             Usuario usuario = dao.findById(userId);
             
             if (usuario == null || usuario.getAvatar() == null || usuario.getAvatar().isEmpty()) {
-                serveDefaultAvatar(resp);
+                serveDefaultAvatar(resp, req);
                 return;
             }
             
-            // La ruta del avatar en BD es "avatars/user_X.ext"
-            // SOLUCIÓN PERMANENTE: Usar la misma ruta fija que UploadAvatarServlet
-            String uploadPath = System.getProperty("avatar.upload.dir");
-            if (uploadPath == null || uploadPath.isEmpty()) {
-                uploadPath = "C:/Users/sere-/Desktop/java/javaTP/src/main/webapp/avatars";
+            // El avatar en BD es solo el nombre del archivo (ej: "avatar1.png")
+            // Obtener la ruta real del archivo desde el contexto web
+            String avatarFileName = usuario.getAvatar();
+            String realPath = req.getServletContext().getRealPath("/avatars/" + avatarFileName);
+            
+            if (realPath == null) {
+                System.err.println("No se pudo resolver la ruta real para: /avatars/" + avatarFileName);
+                serveDefaultAvatar(resp, req);
+                return;
             }
             
-            File avatarFile = new File(uploadPath, usuario.getAvatar().replace("avatars/", ""));
-            
-            System.out.println("DEBUG: Buscando avatar en: " + avatarFile.getAbsolutePath());
-            System.out.println("DEBUG: Existe? " + avatarFile.exists());
+            File avatarFile = new File(realPath);
             
             if (avatarFile.exists() && avatarFile.isFile()) {
                 // Determinar tipo de contenido basado en extensión
@@ -63,25 +64,59 @@ public class AvatarServlet extends HttpServlet {
                 // Servir el archivo
                 Files.copy(avatarFile.toPath(), resp.getOutputStream());
             } else {
-                System.out.println("DEBUG: Archivo no encontrado, sirviendo default");
-                serveDefaultAvatar(resp);
+                System.err.println("Archivo no encontrado: " + avatarFile.getAbsolutePath());
+                serveDefaultAvatar(resp, req);
             }
             
         } catch (NumberFormatException e) {
-            serveDefaultAvatar(resp);
+            serveDefaultAvatar(resp, req);
         } catch (Exception e) {
             System.err.println("Error sirviendo avatar: " + e.getMessage());
             e.printStackTrace();
-            serveDefaultAvatar(resp);
+            serveDefaultAvatar(resp, req);
         }
     }
     
     /**
      * Sirve un avatar por defecto cuando no existe uno personalizado
      */
-    private void serveDefaultAvatar(HttpServletResponse resp) throws IOException {
-        // Redirigir a un avatar por defecto o generar uno dinámico
-        // Por ahora, enviamos un pequeño SVG como avatar por defecto
+    private void serveDefaultAvatar(HttpServletResponse resp, HttpServletRequest req) throws IOException {
+        // Buscar el primer avatar disponible en la carpeta
+        try {
+            String avatarPath = req.getServletContext().getRealPath("/avatars");
+            
+            if (avatarPath != null) {
+                File avatarDir = new File(avatarPath);
+                
+                if (avatarDir.exists() && avatarDir.isDirectory()) {
+                    File[] files = avatarDir.listFiles();
+                    
+                    if (files != null) {
+                        // Buscar el primer archivo de imagen válido
+                        for (File file : files) {
+                            String fileName = file.getName().toLowerCase();
+                            if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg") || 
+                                fileName.endsWith(".png") || fileName.endsWith(".gif") || 
+                                fileName.endsWith(".webp")) {
+                                
+                                String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
+                                String contentType = getContentType(extension);
+                                
+                                resp.setContentType(contentType);
+                                resp.setContentLength((int) file.length());
+                                
+                                Files.copy(file.toPath(), resp.getOutputStream());
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error sirviendo avatar por defecto desde archivo: " + e.getMessage());
+        }
+        
+        // Fallback: generar SVG si no hay archivos
         resp.setContentType("image/svg+xml");
         
         String defaultSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'>" +
@@ -107,6 +142,8 @@ public class AvatarServlet extends HttpServlet {
                 return "image/gif";
             case "webp":
                 return "image/webp";
+            case "svg":
+                return "image/svg+xml";
             default:
                 return "application/octet-stream";
         }

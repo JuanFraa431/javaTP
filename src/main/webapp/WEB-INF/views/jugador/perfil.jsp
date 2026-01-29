@@ -52,40 +52,50 @@
       display: block;
       box-shadow: 0 8px 16px rgba(0,0,0,.3);
     }
-    .avatar-upload-btn {
+    .avatar-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 12px;
+      max-width: 500px;
+      margin: 20px auto;
+    }
+    .avatar-option {
       position: relative;
-      display: inline-block;
       cursor: pointer;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid transparent;
+      transition: all 0.3s ease;
+      aspect-ratio: 1;
     }
-    .avatar-upload-btn input[type="file"] {
+    .avatar-option:hover {
+      transform: scale(1.1);
+      border-color: rgba(102, 126, 234, 0.5);
+    }
+    .avatar-option.selected {
+      border-color: #667eea;
+      box-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
+    }
+    .avatar-option img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .avatar-option .checkmark {
       position: absolute;
-      left: -9999px;
-    }
-    .avatar-upload-btn label {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      top: 4px;
+      right: 4px;
+      background: #667eea;
       color: white;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 700;
-      transition: transform 0.2s;
-    }
-    .avatar-upload-btn label:hover {
-      transform: translateY(-2px);
-    }
-    #preview-container {
-      margin-top: 12px;
-    }
-    .preview-actions {
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
       display: none;
-      gap: 8px;
+      align-items: center;
       justify-content: center;
-      margin-top: 12px;
+      font-size: 14px;
     }
-    .preview-actions.show {
+    .avatar-option.selected .checkmark {
       display: flex;
     }
   </style>
@@ -110,29 +120,70 @@
              src="<%= request.getContextPath() %>/avatar?userId=<%= u != null ? u.getId() : 0 %>" 
              alt="Avatar">
         
-        <form id="avatar-form" action="${pageContext.request.contextPath}/jugador/upload-avatar" method="post" enctype="multipart/form-data">
-          <div class="avatar-upload-btn">
-            <input type="file" id="avatar-input" name="avatar" accept="image/*">
-            <label for="avatar-input">
-              <i class="fa fa-camera"></i> Cambiar Avatar
-            </label>
-          </div>
+        <button type="button" class="btn" id="btn-cambiar-avatar" style="margin-top: 16px;">
+          <i class="fa fa-camera"></i> Cambiar Avatar
+        </button>
+        
+        <div id="avatar-selector" style="display: none;">
+          <p style="color: rgba(255,255,255,.7); font-size: 14px; margin: 16px 0 8px;">
+            Seleccioná tu avatar preferido:
+          </p>
           
-          <div id="preview-container">
-            <div class="preview-actions" id="preview-actions">
-              <button type="submit" class="btn" style="font-size: 14px; padding: 8px 16px;">
-                <i class="fa fa-upload"></i> Subir Imagen
+          <form id="avatar-form" action="${pageContext.request.contextPath}/jugador/upload-avatar" method="post">
+            <input type="hidden" name="avatarName" id="avatarName">
+            
+            <div class="avatar-grid">
+              <% 
+                // Escanear dinámicamente la carpeta avatars
+                String avatarPath = application.getRealPath("/avatars");
+                java.io.File avatarDir = new java.io.File(avatarPath);
+                java.util.List<String> avatarFiles = new java.util.ArrayList<>();
+                
+                if (avatarDir.exists() && avatarDir.isDirectory()) {
+                  java.io.File[] files = avatarDir.listFiles();
+                  if (files != null) {
+                    for (java.io.File file : files) {
+                      String fileName = file.getName().toLowerCase();
+                      // Aceptar imágenes: jpg, jpeg, png, gif, webp
+                      if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg") || 
+                          fileName.endsWith(".png") || fileName.endsWith(".gif") || 
+                          fileName.endsWith(".webp")) {
+                        avatarFiles.add(file.getName());
+                      }
+                    }
+                  }
+                  // Ordenar alfabéticamente
+                  java.util.Collections.sort(avatarFiles);
+                }
+                
+                String currentAvatar = (u != null && u.getAvatar() != null) ? u.getAvatar() : "";
+                
+                for (String avatar : avatarFiles) {
+                  boolean isSelected = avatar.equals(currentAvatar);
+              %>
+              <div class="avatar-option <%= isSelected ? "selected" : "" %>" data-avatar="<%= avatar %>">
+                <img src="${pageContext.request.contextPath}/avatars/<%= avatar %>" 
+                     alt="<%= avatar %>"
+                     onerror="this.src='${pageContext.request.contextPath}/avatar?userId=0'">
+                <span class="checkmark"><i class="fa fa-check"></i></span>
+              </div>
+              <% } %>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 16px; justify-content: center;">
+              <button type="submit" class="btn">
+                <i class="fa fa-save"></i> Guardar Avatar
               </button>
-              <button type="button" class="btn-ghost" onclick="cancelPreview()" style="font-size: 14px; padding: 8px 16px;">
+              <button type="button" class="btn-ghost" id="btn-cancelar-avatar">
                 <i class="fa fa-times"></i> Cancelar
               </button>
             </div>
-          </div>
-        </form>
-        
-        <p style="color: rgba(255,255,255,.5); font-size: 13px; margin-top: 12px;">
-          <i class="fa fa-info-circle"></i> Formatos: JPG, PNG, GIF, WebP (máx. 5MB)
-        </p>
+          </form>
+          
+          <p style="color: rgba(255,255,255,.5); font-size: 13px; margin-top: 12px;">
+            <i class="fa fa-info-circle"></i> Elegí uno de los avatares predefinidos
+          </p>
+        </div>
       </div>
     </div>
 
@@ -173,42 +224,56 @@
   </div>
   
   <script>
-    // Preview de imagen antes de subir
-    const avatarInput = document.getElementById('avatar-input');
-    const avatarImg = document.getElementById('avatar-img');
-    const previewActions = document.getElementById('preview-actions');
-    let originalSrc = avatarImg.src;
+    // Manejo de selección de avatar
+    const avatarOptions = document.querySelectorAll('.avatar-option');
+    const avatarNameInput = document.getElementById('avatarName');
+    const avatarPreview = document.getElementById('avatar-img');
+    const avatarForm = document.getElementById('avatar-form');
+    const btnCambiarAvatar = document.getElementById('btn-cambiar-avatar');
+    const btnCancelarAvatar = document.getElementById('btn-cancelar-avatar');
+    const avatarSelector = document.getElementById('avatar-selector');
     
-    avatarInput.addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        // Validar tamaño
-        if (file.size > 5 * 1024 * 1024) {
-          alert('El archivo es demasiado grande. Máximo 5MB');
-          return;
-        }
-        
-        // Validar tipo
-        if (!file.type.match('image.*')) {
-          alert('Por favor selecciona una imagen válida');
-          return;
-        }
-        
-        // Mostrar preview
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          avatarImg.src = e.target.result;
-          previewActions.classList.add('show');
-        };
-        reader.readAsDataURL(file);
-      }
+    // Configurar el avatar inicial si hay uno seleccionado
+    const initialSelected = document.querySelector('.avatar-option.selected');
+    if (initialSelected) {
+      avatarNameInput.value = initialSelected.dataset.avatar;
+    }
+    
+    // Mostrar selector de avatares
+    btnCambiarAvatar.addEventListener('click', function() {
+      avatarSelector.style.display = 'block';
+      btnCambiarAvatar.style.display = 'none';
     });
     
-    function cancelPreview() {
-      avatarImg.src = originalSrc;
-      avatarInput.value = '';
-      previewActions.classList.remove('show');
-    }
+    // Ocultar selector de avatares
+    btnCancelarAvatar.addEventListener('click', function() {
+      avatarSelector.style.display = 'none';
+      btnCambiarAvatar.style.display = 'inline-block';
+    });
+    
+    // Manejar clic en avatares
+    avatarOptions.forEach(option => {
+      option.addEventListener('click', function() {
+        // Remover selección anterior
+        avatarOptions.forEach(opt => opt.classList.remove('selected'));
+        
+        // Seleccionar nuevo avatar
+        this.classList.add('selected');
+        const selectedAvatar = this.dataset.avatar;
+        avatarNameInput.value = selectedAvatar;
+        
+        // Actualizar preview
+        avatarPreview.src = '${pageContext.request.contextPath}/avatars/' + selectedAvatar;
+      });
+    });
+    
+    // Validar antes de enviar
+    avatarForm.addEventListener('submit', function(e) {
+      if (!avatarNameInput.value) {
+        e.preventDefault();
+        alert('Por favor selecciona un avatar');
+      }
+    });
   </script>
 </body>
 </html>
