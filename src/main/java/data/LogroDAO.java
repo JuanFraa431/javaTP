@@ -3,7 +3,10 @@ package data;
 import entities.Logro;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class LogroDAO {
     
@@ -23,6 +26,103 @@ public class LogroDAO {
             }
         }
         return logros;
+    }
+    
+    /**
+     * Obtiene todos los logros (activos e inactivos) para el admin
+     */
+    public List<Logro> findAllForAdmin() throws SQLException {
+        List<Logro> logros = new ArrayList<>();
+        String sql = "SELECT id, clave, nombre, descripcion, icono, puntos, activo " +
+                     "FROM logro ORDER BY activo DESC, puntos DESC, id";
+        
+        try (Connection conn = DbConn.getInstancia().getConn();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                logros.add(mapLogro(rs));
+            }
+        }
+        return logros;
+    }
+    
+    /**
+     * Obtiene un logro por ID
+     */
+    public Logro findById(int id) throws SQLException {
+        String sql = "SELECT id, clave, nombre, descripcion, icono, puntos, activo " +
+                     "FROM logro WHERE id = ?";
+        
+        try (Connection conn = DbConn.getInstancia().getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapLogro(rs);
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Inserta un nuevo logro
+     */
+    public void insert(Logro logro) throws SQLException {
+        String sql = "INSERT INTO logro (clave, nombre, descripcion, icono, puntos, activo) " +
+                     "VALUES (?, ?, ?, ?, ?, ?)";
+        
+        try (Connection conn = DbConn.getInstancia().getConn();
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, logro.getClave());
+            ps.setString(2, logro.getNombre());
+            ps.setString(3, logro.getDescripcion());
+            ps.setString(4, logro.getIcono());
+            ps.setInt(5, logro.getPuntos());
+            ps.setInt(6, logro.getActivo());
+            
+            ps.executeUpdate();
+            
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    logro.setId(rs.getInt(1));
+                }
+            }
+        }
+    }
+    
+    /**
+     * Actualiza un logro existente
+     */
+    public void update(Logro logro) throws SQLException {
+        String sql = "UPDATE logro SET clave = ?, nombre = ?, descripcion = ?, " +
+                     "icono = ?, puntos = ?, activo = ? WHERE id = ?";
+        
+        try (Connection conn = DbConn.getInstancia().getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, logro.getClave());
+            ps.setString(2, logro.getNombre());
+            ps.setString(3, logro.getDescripcion());
+            ps.setString(4, logro.getIcono());
+            ps.setInt(5, logro.getPuntos());
+            ps.setInt(6, logro.getActivo());
+            ps.setInt(7, logro.getId());
+            
+            ps.executeUpdate();
+        }
+    }
+    
+    /**
+     * Elimina un logro (y sus relaciones en usuario_logro por CASCADE)
+     */
+    public boolean delete(int id) throws SQLException {
+        String sql = "DELETE FROM logro WHERE id = ?";
+        
+        try (Connection conn = DbConn.getInstancia().getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        }
     }
     
     /**
@@ -143,6 +243,68 @@ public class LogroDAO {
             }
         }
         return 0;
+    }
+    
+    /**
+     * Obtiene estadísticas de desbloqueos por logro
+     * @return Map con clave=logro_id, valor=cantidad de desbloqueos
+     */
+    public Map<Integer, Integer> obtenerEstadisticasDesbloqueos() throws SQLException {
+        Map<Integer, Integer> stats = new LinkedHashMap<>();
+        String sql = "SELECT l.id, l.nombre, COUNT(ul.usuario_id) as desbloqueos " +
+                     "FROM logro l " +
+                     "LEFT JOIN usuario_logro ul ON l.id = ul.logro_id " +
+                     "WHERE l.activo = 1 " +
+                     "GROUP BY l.id, l.nombre " +
+                     "ORDER BY l.puntos DESC, l.id";
+        
+        try (Connection conn = DbConn.getInstancia().getConn();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                stats.put(rs.getInt("id"), rs.getInt("desbloqueos"));
+            }
+        }
+        return stats;
+    }
+    
+    /**
+     * Obtiene logros con sus estadísticas de desbloqueo
+     */
+    public List<Map<String, Object>> obtenerLogrosConEstadisticas() throws SQLException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String sql = "SELECT l.id, l.clave, l.nombre, l.descripcion, l.icono, l.puntos, " +
+                     "COUNT(ul.usuario_id) as desbloqueos, " +
+                     "(SELECT COUNT(*) FROM usuario WHERE activo = 1) as total_usuarios " +
+                     "FROM logro l " +
+                     "LEFT JOIN usuario_logro ul ON l.id = ul.logro_id " +
+                     "WHERE l.activo = 1 " +
+                     "GROUP BY l.id, l.clave, l.nombre, l.descripcion, l.icono, l.puntos " +
+                     "ORDER BY l.puntos DESC, l.id";
+        
+        try (Connection conn = DbConn.getInstancia().getConn();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                Map<String, Object> logroStats = new HashMap<>();
+                logroStats.put("id", rs.getInt("id"));
+                logroStats.put("clave", rs.getString("clave"));
+                logroStats.put("nombre", rs.getString("nombre"));
+                logroStats.put("descripcion", rs.getString("descripcion"));
+                logroStats.put("icono", rs.getString("icono"));
+                logroStats.put("puntos", rs.getInt("puntos"));
+                logroStats.put("desbloqueos", rs.getInt("desbloqueos"));
+                logroStats.put("totalUsuarios", rs.getInt("total_usuarios"));
+                
+                int desbloqueos = rs.getInt("desbloqueos");
+                int totalUsuarios = rs.getInt("total_usuarios");
+                double porcentaje = totalUsuarios > 0 ? (desbloqueos * 100.0 / totalUsuarios) : 0;
+                logroStats.put("porcentaje", Math.round(porcentaje * 10.0) / 10.0);
+                
+                result.add(logroStats);
+            }
+        }
+        return result;
     }
     
     /**

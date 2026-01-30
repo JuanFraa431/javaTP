@@ -6,6 +6,7 @@ import java.security.MessageDigest;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /** DAO para tabla usuario(id, nombre, email, password, rol, fecha_registro, activo) */
 public class UsuarioDAO {
@@ -364,5 +365,74 @@ public class UsuarioDAO {
                 try { con.close(); } catch (SQLException e) { /* ignore */ }
             }
         }
+    }
+    
+    /* ===================== Métodos de estadísticas ===================== */
+    
+    public int contarTodos() throws SQLException {
+        String sql = "SELECT COUNT(*) as total FROM usuario";
+        try (Connection con = DbConn.getInstancia().getConn();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        }
+        return 0;
+    }
+    
+    public int contarActivos() throws SQLException {
+        String sql = "SELECT COUNT(*) as total FROM usuario WHERE activo = 1";
+        try (Connection con = DbConn.getInstancia().getConn();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        }
+        return 0;
+    }
+    
+    public Map<String, Object> obtenerEstadisticasUsuarios() throws SQLException {
+        Map<String, Object> stats = new java.util.HashMap<>();
+        
+        // Totales
+        stats.put("total", contarTodos());
+        stats.put("activos", contarActivos());
+        stats.put("inactivos", contarTodos() - contarActivos());
+        
+        // Usuarios por rol
+        String sqlRoles = "SELECT rol, COUNT(*) as cantidad FROM usuario GROUP BY rol";
+        try (Connection con = DbConn.getInstancia().getConn();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sqlRoles)) {
+            java.util.List<Map<String, Object>> roles = new java.util.ArrayList<>();
+            while (rs.next()) {
+                Map<String, Object> rol = new java.util.HashMap<>();
+                rol.put("rol", rs.getString("rol"));
+                rol.put("cantidad", rs.getInt("cantidad"));
+                roles.add(rol);
+            }
+            stats.put("roles", roles);
+        }
+        
+        // Usuarios con más partidas
+        String sqlPartidas = "SELECT u.nombre, u.apellido, COUNT(p.id) as partidas " +
+                             "FROM usuario u LEFT JOIN partida p ON u.id = p.usuario_id " +
+                             "GROUP BY u.id ORDER BY partidas DESC LIMIT 10";
+        try (Connection con = DbConn.getInstancia().getConn();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sqlPartidas)) {
+            java.util.List<Map<String, Object>> topJugadores = new java.util.ArrayList<>();
+            while (rs.next()) {
+                Map<String, Object> jugador = new java.util.HashMap<>();
+                jugador.put("nombre", rs.getString("nombre") + " " + rs.getString("apellido"));
+                jugador.put("partidas", rs.getInt("partidas"));
+                topJugadores.add(jugador);
+            }
+            stats.put("topJugadores", topJugadores);
+        }
+        
+        return stats;
     }
 }

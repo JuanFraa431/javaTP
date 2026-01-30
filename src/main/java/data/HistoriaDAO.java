@@ -4,6 +4,7 @@ import entities.Historia;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class HistoriaDAO {
 
@@ -245,5 +246,67 @@ public class HistoriaDAO {
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         }
+    }
+    
+    /* ===================== Métodos de estadísticas ===================== */
+    
+    public int contarTodas() throws SQLException {
+        String sql = "SELECT COUNT(*) as total FROM historia";
+        try (Connection con = DbConn.getInstancia().getConn();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        }
+        return 0;
+    }
+    
+    public int contarActivas() throws SQLException {
+        String sql = "SELECT COUNT(*) as total FROM historia WHERE activa = 1";
+        try (Connection con = DbConn.getInstancia().getConn();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        }
+        return 0;
+    }
+    
+    public List<Map<String, Object>> obtenerEstadisticasHistorias() throws SQLException {
+        String sql = "SELECT h.id, h.titulo, h.descripcion_corta, h.dificultad, " +
+                     "COUNT(DISTINCT p.id) as total_partidas, " +
+                     "COUNT(DISTINCT CASE WHEN p.estado = 'completada' THEN p.id END) as partidas_completadas, " +
+                     "ROUND(AVG(CASE WHEN p.estado = 'completada' THEN TIMESTAMPDIFF(MINUTE, p.fecha_inicio, p.fecha_fin) END), 0) as tiempo_promedio " +
+                     "FROM historia h " +
+                     "LEFT JOIN partida p ON h.id = p.historia_id " +
+                     "WHERE h.activa = 1 " +
+                     "GROUP BY h.id " +
+                     "ORDER BY total_partidas DESC";
+        
+        List<Map<String, Object>> historiasStats = new ArrayList<>();
+        try (Connection con = DbConn.getInstancia().getConn();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                Map<String, Object> historia = new java.util.HashMap<>();
+                historia.put("id", rs.getInt("id"));
+                historia.put("titulo", rs.getString("titulo"));
+                historia.put("descripcion", rs.getString("descripcion_corta"));
+                historia.put("dificultad", rs.getString("dificultad"));
+                historia.put("totalPartidas", rs.getInt("total_partidas"));
+                historia.put("partidasCompletadas", rs.getInt("partidas_completadas"));
+                historia.put("tiempoPromedio", rs.getObject("tiempo_promedio") != null ? rs.getInt("tiempo_promedio") : 0);
+                
+                int total = rs.getInt("total_partidas");
+                int completadas = rs.getInt("partidas_completadas");
+                double tasaCompletado = total > 0 ? (completadas * 100.0 / total) : 0;
+                historia.put("tasaCompletado", tasaCompletado);
+                
+                historiasStats.add(historia);
+            }
+        }
+        return historiasStats;
     }
 }

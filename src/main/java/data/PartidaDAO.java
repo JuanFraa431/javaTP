@@ -3,6 +3,7 @@ package data;
 import entities.Partida;
 import java.sql.*;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
+import java.util.Map;
 import java.util.Optional;
 
 public class PartidaDAO {
@@ -272,6 +273,129 @@ public class PartidaDAO {
             ps.setInt(1, partidaId);
             return ps.executeUpdate() > 0;
         }
+    }
+    
+    /** Contar total de pistas en una historia */
+    public int contarPistasPorHistoria(int historiaId) throws SQLException {
+        String sql = "SELECT COUNT(*) as total FROM pista WHERE historia_id=?";
+        try (Connection con = DbConn.getInstancia().getConn();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, historiaId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("total");
+                }
+            }
+        }
+        return 0;
+    }
+    
+    /** Contar total de ubicaciones en una historia */
+    public int contarUbicacionesPorHistoria(int historiaId) throws SQLException {
+        String sql = "SELECT COUNT(*) as total FROM ubicacion WHERE historia_id=?";
+        try (Connection con = DbConn.getInstancia().getConn();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, historiaId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("total");
+                }
+            }
+        }
+        return 0;
+    }
+    
+    /* ===================== Métodos de estadísticas ===================== */
+    
+    public int contarTodas() throws SQLException {
+        String sql = "SELECT COUNT(*) as total FROM partida";
+        try (Connection con = DbConn.getInstancia().getConn();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        }
+        return 0;
+    }
+    
+    public int contarEnCurso() throws SQLException {
+        String sql = "SELECT COUNT(*) as total FROM partida WHERE estado = 'en_curso'";
+        try (Connection con = DbConn.getInstancia().getConn();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        }
+        return 0;
+    }
+    
+    public int contarCompletadas() throws SQLException {
+        String sql = "SELECT COUNT(*) as total FROM partida WHERE estado = 'completada'";
+        try (Connection con = DbConn.getInstancia().getConn();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        }
+        return 0;
+    }
+    
+    public Map<String, Object> obtenerEstadisticasPartidas() throws SQLException {
+        Map<String, Object> stats = new java.util.HashMap<>();
+        
+        // Totales básicos
+        stats.put("total", contarTodas());
+        stats.put("enCurso", contarEnCurso());
+        stats.put("completadas", contarCompletadas());
+        
+        // Partidas por estado
+        String sqlEstados = "SELECT estado, COUNT(*) as cantidad FROM partida GROUP BY estado";
+        try (Connection con = DbConn.getInstancia().getConn();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sqlEstados)) {
+            java.util.List<Map<String, Object>> estados = new java.util.ArrayList<>();
+            while (rs.next()) {
+                Map<String, Object> estado = new java.util.HashMap<>();
+                estado.put("estado", rs.getString("estado"));
+                estado.put("cantidad", rs.getInt("cantidad"));
+                estados.add(estado);
+            }
+            stats.put("estados", estados);
+        }
+        
+        // Tiempo promedio de completado (en minutos)
+        String sqlTiempo = "SELECT ROUND(AVG(TIMESTAMPDIFF(MINUTE, fecha_inicio, fecha_fin)), 0) as promedio " +
+                          "FROM partida WHERE estado = 'completada' AND fecha_fin IS NOT NULL";
+        try (Connection con = DbConn.getInstancia().getConn();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sqlTiempo)) {
+            if (rs.next()) {
+                Object promedio = rs.getObject("promedio");
+                stats.put("tiempoPromedio", promedio != null ? rs.getInt("promedio") : 0);
+            }
+        }
+        
+        // Partidas por historia
+        String sqlHistorias = "SELECT h.titulo, COUNT(p.id) as cantidad " +
+                             "FROM historia h LEFT JOIN partida p ON h.id = p.historia_id " +
+                             "GROUP BY h.id ORDER BY cantidad DESC";
+        try (Connection con = DbConn.getInstancia().getConn();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sqlHistorias)) {
+            java.util.List<Map<String, Object>> historias = new java.util.ArrayList<>();
+            while (rs.next()) {
+                Map<String, Object> historia = new java.util.HashMap<>();
+                historia.put("titulo", rs.getString("titulo"));
+                historia.put("cantidad", rs.getInt("cantidad"));
+                historias.add(historia);
+            }
+            stats.put("historias", historias);
+        }
+        
+        return stats;
     }
 
 }

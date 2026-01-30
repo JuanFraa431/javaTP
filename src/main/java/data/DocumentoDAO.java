@@ -237,4 +237,58 @@ public class DocumentoDAO {
         }
         return 0;
     }
+    
+    /**
+     * Obtiene todos los documentos de todas las historias
+     */
+    public List<Documento> findAll() throws SQLException {
+        String sql = "SELECT id, historia_id, clave, nombre, icono, contenido, " +
+                     "codigo_correcto, pista_nombre FROM documento ORDER BY historia_id, id";
+        
+        List<Documento> docs = new ArrayList<>();
+        try (Connection con = DbConn.getInstancia().getConn();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            while (rs.next()) {
+                docs.add(map(rs));
+            }
+        }
+        return docs;
+    }
+    
+    /**
+     * Obtiene un documento por su ID
+     */
+    public Documento findById(int id) throws SQLException {
+        String sql = "SELECT id, historia_id, clave, nombre, icono, contenido, " +
+                     "codigo_correcto, pista_nombre FROM documento WHERE id = ?";
+        
+        try (Connection con = DbConn.getInstancia().getConn();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setInt(1, id);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return map(rs);
+                }
+            }
+        }
+        return null;
+    }
+    
+    /* ===================== Métodos de estadísticas ===================== */
+    
+    public int contarTodos() throws SQLException {
+        String sql = "SELECT COUNT(*) as total FROM documento";
+        try (Connection con = DbConn.getInstancia().getConn();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        }
+        return 0;
+    }
 }

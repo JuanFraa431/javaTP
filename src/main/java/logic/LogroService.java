@@ -1,16 +1,19 @@
 package logic;
 
 import data.ClasificacionDAO;
-import data.DocumentoDAO;
 import data.LogroDAO;
 import data.PartidaDAO;
+import data.ProgresoPistaDAO;
+import data.ProgresoUbicacionDAO;
 import data.UsuarioDAO;
 import entities.Partida;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Servicio para verificar y otorgar logros automáticamente
@@ -18,9 +21,10 @@ import java.util.List;
 public class LogroService {
     private final LogroDAO logroDAO = new LogroDAO();
     private final PartidaDAO partidaDAO = new PartidaDAO();
-    private final DocumentoDAO documentoDAO = new DocumentoDAO();
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
     private final ClasificacionDAO clasificacionDAO = new ClasificacionDAO();
+    private final ProgresoPistaDAO progresoPistaDAO = new ProgresoPistaDAO();
+    private final ProgresoUbicacionDAO progresoUbicacionDAO = new ProgresoUbicacionDAO();
     
     /**
      * Verifica y otorga todos los logros aplicables después de que una partida termine
@@ -37,7 +41,8 @@ public class LogroService {
         verificarDetectiveNovato(usuarioId);
         verificarDetectiveExperto(usuarioId);
         verificarPerfeccionista(usuarioId, partida);
-        verificarColeccionista(usuarioId, partida);
+        verificarColeccionista(usuarioId);
+        verificarExplorador(usuarioId);
         verificarVelocista(usuarioId, partida);
         verificarMadrugador(partida);
         verificarNocturno(partida);
@@ -105,24 +110,42 @@ public class LogroService {
     }
     
     /**
-     * Logro: coleccionista - Encontrar todos los documentos en una historia
+     * Logro: coleccionista - Encontrar todas las pistas en 5 casos diferentes
      */
-    private void verificarColeccionista(int usuarioId, Partida partida) throws SQLException {
-        int historiaId = partida.getHistoriaId();
+    private void verificarColeccionista(int usuarioId) throws SQLException {
+        List<Partida> ganadas = partidaDAO.findByUsuarioAndEstado(usuarioId, "GANADA");
         
-        // Contar documentos totales en la historia
-        int totalDocumentos = documentoDAO.contarDocumentosPorHistoria(historiaId);
+        int casosConTodasLasPistas = 0;
+        Set<Integer> historiasVerificadas = new HashSet<>();
         
-        // Contar documentos descubiertos por el usuario en esta partida
-        int descubiertos = documentoDAO.contarDocumentosDescubiertos(partida.getId());
-        
-        if (totalDocumentos > 0 && descubiertos >= totalDocumentos) {
-            logroDAO.desbloquearLogro(usuarioId, "coleccionista");
+        for (Partida partida : ganadas) {
+            int historiaId = partida.getHistoriaId();
+            
+            // Evitar contar la misma historia múltiples veces
+            if (historiasVerificadas.contains(historiaId)) continue;
+            
+            // Contar pistas totales en la historia
+            int totalPistas = partidaDAO.contarPistasPorHistoria(historiaId);
+            
+            // Contar pistas encontradas en esta partida
+            int pistasEncontradas = progresoPistaDAO.contarPistasPorPartida(partida.getId());
+            
+            // Si encontró todas las pistas de esta historia
+            if (totalPistas > 0 && pistasEncontradas >= totalPistas) {
+                casosConTodasLasPistas++;
+                historiasVerificadas.add(historiaId);
+                
+                // Si completó 5 historias diferentes con todas las pistas
+                if (casosConTodasLasPistas >= 5) {
+                    logroDAO.desbloquearLogro(usuarioId, "coleccionista");
+                    return;
+                }
+            }
         }
     }
     
     /**
-     * Logro: velocista - Completar una partida en menos de 30 minutos
+     * Logro: velocista - Completar una partida en menos de 10 minutos
      */
     private void verificarVelocista(int usuarioId, Partida partida) throws SQLException {
         Timestamp inicio = partida.getFechaInicio();
@@ -130,28 +153,28 @@ public class LogroService {
         
         if (inicio != null && fin != null) {
             long duracionMinutos = (fin.getTime() - inicio.getTime()) / (1000 * 60);
-            if (duracionMinutos < 30) {
+            if (duracionMinutos < 10) {
                 logroDAO.desbloquearLogro(usuarioId, "velocista");
             }
         }
     }
     
     /**
-     * Logro: madrugador - Completar una partida entre 6-10 AM
+     * Logro: madrugador - Iniciar una partida entre 5am-7am
      */
     private void verificarMadrugador(Partida partida) throws SQLException {
-        if (partida.getFechaFin() == null) return;
+        if (partida.getFechaInicio() == null) return;
         
-        LocalDateTime fechaFin = partida.getFechaFin().toLocalDateTime();
-        LocalTime hora = fechaFin.toLocalTime();
+        LocalDateTime fechaInicio = partida.getFechaInicio().toLocalDateTime();
+        LocalTime hora = fechaInicio.toLocalTime();
         
-        if (hora.getHour() >= 6 && hora.getHour() < 10) {
+        if (hora.getHour() >= 5 && hora.getHour() < 7) {
             logroDAO.desbloquearLogro(partida.getUsuarioId(), "madrugador");
         }
     }
     
     /**
-     * Logro: nocturno - Completar una partida entre 10 PM y 2 AM
+     * Logro: nocturno - Resolver un caso entre 12am-3am
      */
     private void verificarNocturno(Partida partida) throws SQLException {
         if (partida.getFechaFin() == null) return;
@@ -159,9 +182,44 @@ public class LogroService {
         LocalDateTime fechaFin = partida.getFechaFin().toLocalDateTime();
         LocalTime hora = fechaFin.toLocalTime();
         
-        // Entre 22:00 y 23:59 OR entre 00:00 y 02:00
-        if (hora.getHour() >= 22 || hora.getHour() < 2) {
+        // Entre 00:00 (12am) y 03:00 (3am)
+        if (hora.getHour() >= 0 && hora.getHour() < 3) {
             logroDAO.desbloquearLogro(partida.getUsuarioId(), "nocturno");
+        }
+    }
+    
+    /**
+     * Logro: explorador - Visitar todas las ubicaciones en 3 historias
+     */
+    private void verificarExplorador(int usuarioId) throws SQLException {
+        List<Partida> ganadas = partidaDAO.findByUsuarioAndEstado(usuarioId, "GANADA");
+        
+        int historiasConTodasUbicaciones = 0;
+        Set<Integer> historiasVerificadas = new HashSet<>();
+        
+        for (Partida partida : ganadas) {
+            int historiaId = partida.getHistoriaId();
+            
+            // Evitar contar la misma historia múltiples veces
+            if (historiasVerificadas.contains(historiaId)) continue;
+            
+            // Contar ubicaciones totales en la historia
+            int totalUbicaciones = partidaDAO.contarUbicacionesPorHistoria(historiaId);
+            
+            // Contar ubicaciones visitadas en esta partida
+            int ubicacionesVisitadas = progresoUbicacionDAO.contarUbicacionesPorPartida(partida.getId());
+            
+            // Si visitó todas las ubicaciones de esta historia
+            if (totalUbicaciones > 0 && ubicacionesVisitadas >= totalUbicaciones) {
+                historiasConTodasUbicaciones++;
+                historiasVerificadas.add(historiaId);
+                
+                // Si completó 3 historias diferentes con todas las ubicaciones
+                if (historiasConTodasUbicaciones >= 3) {
+                    logroDAO.desbloquearLogro(usuarioId, "explorador");
+                    return;
+                }
+            }
         }
     }
     

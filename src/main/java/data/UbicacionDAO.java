@@ -86,4 +86,18 @@ public class UbicacionDAO {
         }
         return null;
     }
+    
+    /* ===================== Métodos de estadísticas ===================== */
+    
+    public int contarTodas() throws SQLException {
+        String sql = "SELECT COUNT(*) as total FROM ubicacion";
+        try (Connection con = DbConn.getInstancia().getConn();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        }
+        return 0;
+    }
 }
