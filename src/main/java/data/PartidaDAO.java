@@ -320,7 +320,7 @@ public class PartidaDAO {
     }
     
     public int contarEnCurso() throws SQLException {
-        String sql = "SELECT COUNT(*) as total FROM partida WHERE estado = 'en_curso'";
+        String sql = "SELECT COUNT(*) as total FROM partida WHERE estado = 'EN_PROGRESO'";
         try (Connection con = DbConn.getInstancia().getConn();
              Statement stmt = con.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -332,7 +332,7 @@ public class PartidaDAO {
     }
     
     public int contarCompletadas() throws SQLException {
-        String sql = "SELECT COUNT(*) as total FROM partida WHERE estado = 'completada'";
+        String sql = "SELECT COUNT(*) as total FROM partida WHERE estado IN ('GANADA', 'PERDIDA')";
         try (Connection con = DbConn.getInstancia().getConn();
              Statement stmt = con.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -368,7 +368,7 @@ public class PartidaDAO {
         
         // Tiempo promedio de completado (en minutos)
         String sqlTiempo = "SELECT ROUND(AVG(TIMESTAMPDIFF(MINUTE, fecha_inicio, fecha_fin)), 0) as promedio " +
-                          "FROM partida WHERE estado = 'completada' AND fecha_fin IS NOT NULL";
+                          "FROM partida WHERE estado IN ('GANADA', 'PERDIDA') AND fecha_fin IS NOT NULL";
         try (Connection con = DbConn.getInstancia().getConn();
              Statement stmt = con.createStatement();
              ResultSet rs = stmt.executeQuery(sqlTiempo)) {

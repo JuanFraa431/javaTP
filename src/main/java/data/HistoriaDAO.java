@@ -275,10 +275,10 @@ public class HistoriaDAO {
     }
     
     public List<Map<String, Object>> obtenerEstadisticasHistorias() throws SQLException {
-        String sql = "SELECT h.id, h.titulo, h.descripcion_corta, h.dificultad, " +
+        String sql = "SELECT h.id, h.titulo, h.descripcion, h.dificultad, " +
                      "COUNT(DISTINCT p.id) as total_partidas, " +
-                     "COUNT(DISTINCT CASE WHEN p.estado = 'completada' THEN p.id END) as partidas_completadas, " +
-                     "ROUND(AVG(CASE WHEN p.estado = 'completada' THEN TIMESTAMPDIFF(MINUTE, p.fecha_inicio, p.fecha_fin) END), 0) as tiempo_promedio " +
+                     "COUNT(DISTINCT CASE WHEN p.estado IN ('GANADA', 'PERDIDA') THEN p.id END) as partidas_completadas, " +
+                     "ROUND(AVG(CASE WHEN p.estado IN ('GANADA', 'PERDIDA') THEN TIMESTAMPDIFF(MINUTE, p.fecha_inicio, p.fecha_fin) END), 0) as tiempo_promedio " +
                      "FROM historia h " +
                      "LEFT JOIN partida p ON h.id = p.historia_id " +
                      "WHERE h.activa = 1 " +
@@ -293,7 +293,7 @@ public class HistoriaDAO {
                 Map<String, Object> historia = new java.util.HashMap<>();
                 historia.put("id", rs.getInt("id"));
                 historia.put("titulo", rs.getString("titulo"));
-                historia.put("descripcion", rs.getString("descripcion_corta"));
+                historia.put("descripcion", rs.getString("descripcion"));
                 historia.put("dificultad", rs.getString("dificultad"));
                 historia.put("totalPartidas", rs.getInt("total_partidas"));
                 historia.put("partidasCompletadas", rs.getInt("partidas_completadas"));

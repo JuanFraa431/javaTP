@@ -417,7 +417,7 @@ public class UsuarioDAO {
         }
         
         // Usuarios con más partidas
-        String sqlPartidas = "SELECT u.nombre, u.apellido, COUNT(p.id) as partidas " +
+        String sqlPartidas = "SELECT u.nombre, COUNT(p.id) as partidas " +
                              "FROM usuario u LEFT JOIN partida p ON u.id = p.usuario_id " +
                              "GROUP BY u.id ORDER BY partidas DESC LIMIT 10";
         try (Connection con = DbConn.getInstancia().getConn();
@@ -426,7 +426,7 @@ public class UsuarioDAO {
             java.util.List<Map<String, Object>> topJugadores = new java.util.ArrayList<>();
             while (rs.next()) {
                 Map<String, Object> jugador = new java.util.HashMap<>();
-                jugador.put("nombre", rs.getString("nombre") + " " + rs.getString("apellido"));
+                jugador.put("nombre", rs.getString("nombre"));
                 jugador.put("partidas", rs.getInt("partidas"));
                 topJugadores.add(jugador);
             }

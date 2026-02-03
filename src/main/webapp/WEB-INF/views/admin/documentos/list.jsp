@@ -36,29 +36,16 @@
     if (search == null) search = "";
   %>
 
-  <!-- acciones -->
   <div class="actions">
     <div class="left">
       <form class="search" method="get" action="${pageContext.request.contextPath}/admin/documentos">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" name="search" placeholder="Buscar por nombre o clave..." value="<%= search %>">
-      </form>
-      
-      <form class="filter-form" method="get" action="${pageContext.request.contextPath}/admin/documentos">
-        <label for="historia">Historia:</label>
-        <select id="historia" name="historia" onchange="this.form.submit()">
-          <option value="">Todas</option>
-          <% for (Historia h : historias) { %>
-            <option value="<%= h.getId() %>" <%= historiaSelected != null && historiaSelected.equals(String.valueOf(h.getId())) ? "selected" : "" %>>
-              <%= h.getTitulo() %>
-            </option>
-          <% } %>
-        </select>
+        <input type="text" name="search" placeholder="Buscar por nombre…" value="<%= search %>">
       </form>
     </div>
     <div class="right">
       <a class="btn" href="${pageContext.request.contextPath}/admin/documentos/form">
-        <i class="fa-solid fa-plus"></i> Nuevo documento
+        <i class="fa-solid fa-file-lines"></i> Nuevo documento
       </a>
       <a class="btn btn-secondary" href="${pageContext.request.contextPath}/admin/dashboard">
         <i class="fa-solid fa-grid-2"></i> Dashboard
@@ -66,74 +53,56 @@
     </div>
   </div>
 
-  <!-- tabla -->
   <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Historia</th>
-            <th>Clave</th>
-            <th>Nombre</th>
-            <th style="text-align: center;">Icono</th>
-            <th style="text-align: center;">Código</th>
-            <th style="text-align: center;">Pista</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% if (documentos == null || documentos.isEmpty()) { %>
-            <tr>
-              <td colspan="8" style="text-align: center; padding: 40px; color: #666;">
-                <i class="fa-solid fa-inbox" style="font-size: 48px; opacity: 0.3; display: block; margin-bottom: 16px;"></i>
-                No hay documentos registrados
-              </td>
-            </tr>
-          <% } else {
-               for (Documento d : documentos) {
-                 String historiaTitulo = historiasMap.get(d.getHistoriaId());
-                 boolean tieneCodigo = d.getCodigoCorrecto() != null && !d.getCodigoCorrecto().isEmpty();
-                 boolean tienePista = d.getPistaNombre() != null && !d.getPistaNombre().isEmpty();
-          %>
-            <td><strong>#<%= d.getId() %></strong></td>
-            <td><%= historiaTitulo != null ? historiaTitulo : "Historia #" + d.getHistoriaId() %></td>
-            <td><code style="background:#f3f4f6;padding:2px 6px;border-radius:3px;font-size:13px;"><%= d.getClave() %></code></td>
-            <td><strong><%= d.getNombre() %></strong></td>
-            <td style="text-align: center;">
-              <i class="<%= d.getIcono() %>" style="font-size: 20px; color: #3b82f6;"></i>
-            </td>
-            <td style="text-align: center;">
-              <% if (tieneCodigo) { %>
-                <span class="badge" style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
-                  <i class="fa-solid fa-key"></i> <%= d.getCodigoCorrecto() %>
-                </span>
-              <% } else { %>
-                <span style="color: #999;">—</span>
-              <% } %>
-            </td>
-            <td style="text-align: center;">
-              <% if (tienePista) { %>
-                <span class="badge" style="background: #3b82f6; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
-                  <i class="fa-solid fa-lightbulb"></i> <%= d.getPistaNombre() %>
-                </span>
-              <% } else { %>
-                <span style="color: #999;">—</span>
-              <% } %>
-            </td>
-            <td class="actions">
-              <a class="icon-btn" href="${pageContext.request.contextPath}/admin/documentos/form?id=<%= d.getId() %>" title="Editar">
-                <i class="fa-solid fa-edit"></i>
-              </a>
-              <form method="post" action="${pageContext.request.contextPath}/admin/documentos/delete" style="display:inline;" 
-                    onsubmit="return confirm('¿Confirmar eliminación del documento <%= d.getNombre() %>?');">
-                <input type="hidden" name="id" value="<%= d.getId() %>">
-                <button type="submit" class="icon-btn danger" title="Eliminar">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              </form>
-            </td>
-          </tr>
-        <% } } %>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Clave</th>
+          <th>Nombre</th>
+          <th>Historia</th>
+          <th>Icono</th>
+          <th>Código</th>
+          <th class="actions-col">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%
+          if (documentos == null || documentos.isEmpty()) {
+        %>
+        <tr>
+          <td colspan="7" style="text-align:center; color:#999;">No hay documentos</td>
+        </tr>
+        <%
+          } else {
+            for (Documento d : documentos) {
+              String historiaTitulo = historiasMap.get(d.getHistoriaId());
+              boolean tieneCodigo = d.getCodigoCorrecto() != null && !d.getCodigoCorrecto().isEmpty();
+        %>
+        <tr>
+          <td><%= d.getId() %></td>
+          <td><code style="background:rgba(59,130,246,0.1);color:#60a5fa;padding:4px 8px;border-radius:4px;font-size:12px;border:1px solid rgba(59,130,246,0.2);"><%= d.getClave() %></code></td>
+          <td><strong><%= d.getNombre() %></strong></td>
+          <td><%= historiaTitulo != null ? historiaTitulo : "Historia #" + d.getHistoriaId() %></td>
+          <td><i class="<%= d.getIcono() %>" style="font-size: 18px; color: #3b82f6;"></i></td>
+          <td><%= tieneCodigo ? "🔑 " + d.getCodigoCorrecto() : "-" %></td>
+          <td class="actions-col">
+            <a class="icon-btn" href="${pageContext.request.contextPath}/admin/documentos/form?id=<%= d.getId() %>" title="Editar">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </a>
+            <form method="post" action="${pageContext.request.contextPath}/admin/documentos/delete" style="display:inline;" 
+                  onsubmit="return confirm('¿Eliminar este documento?');">
+              <input type="hidden" name="id" value="<%= d.getId() %>">
+              <button type="submit" class="icon-btn danger" title="Eliminar">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+        <%
+            }
+          }
+        %>
       </tbody>
     </table>
   </div>
