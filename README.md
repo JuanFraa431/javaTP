@@ -45,9 +45,9 @@ Los datos iniciales del script cargan usuarios listos para probar:
   - Contraseña: `1`
 - Jugador (ejemplo 1)
   - Email: `juan@detective.com`
-  - Contraseña: `1234`
+  - Contraseña: `juan123`
 - Jugador (ejemplo 2)
   - Email: `bruno@gmail.com`
-  - Contraseña: `1234`
+  - Contraseña: `bruno123`
 
 > Si ingresás con usuario inactivo, el login no te dejará pasar. Los admins pueden reactivar desde “Usuarios”.
